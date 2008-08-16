@@ -1,6 +1,7 @@
 #ifndef _singular_decomposition_h
 #define _singular_decomposition_h
 
+#include "qr_decomposition.h"
 #include "givens_rotation.h"
 #include "householder_transform.h"
 
@@ -46,86 +47,24 @@ template<class T> std::pair< matrix< T >, matrix< T > > transform_to_bidiagonal(
 
 namespace {
 
-template<class T> typename T::size_type find_max( const T& v ){
-	typename T::size_type  i,m = 0;
+template<class T> typename T::size_type find_max( typename T::size_type s, typename T::size_type n, const T& v ){
+	typename T::size_type  i, m = s;
 	typename T::value_type M = 0.0;
 
-	for( i = 0; i < v.size(); i++ ){
-		if( v(i) > M ) {
+	assert( s < n );
+	assert( n <= v.size2() );
+
+	for( i = s; i < n; i++ ){
+		if( v(i,i) > M ) {
 			m = i;
-			M = v(i);
+			M = v(i,i);
 		}
 	}
 
 	return m;
 }
 
-template<class T> T calculate_o( T q2, T q1, T e2, T e1 ){
-
-	const T f = ( std::pow( q2,2 ) - std::pow( q1,2 ) +  std::pow( e2,2 ) - std::pow( e1,2 ) )
-	              / ( 2 * e2 * q1 );
-
-	const T t = ( f < 0 ?
-	              - f + std::pow((1+std::pow( f,2 )),0.5) :
-	              - f - std::pow((1+std::pow( f,2 )),0.5) );
-
-	return ( std::pow(q2,2) + e2*(e2 - q1/t) );
-}
-
 };
-
-template<class T> typename matrix< T >::size_type qr_decomposition(
-	vector< T >& q,
-	vector< T >& e,
-	typename matrix< T >::size_type n,
-	matrix< T >& G,
-	matrix< T >& W ){
-	typename matrix< T >::size_type i,j;
-	typename matrix< T >::value_type o,z;
-
-	assert( n <= G.size1() );
-	assert( n <= W.size2() );
-	assert( n <= q.size() );
-	assert( n <= e.size() );
-
-	o = calculate_o< typename matrix< T >::value_type >( q[n-1], q[n-2], e[n-1], e[n-2] );
-
-	i = 1;
-	e[0] = q[0] - o/q[0];
-	z = e[1];
-
-	std::pair< typename matrix< T >::value_type,
-	           typename matrix< T >::value_type > p;
-
-	for( i = 1; i < n; ++i ){
-
-		p = make_givens_rotation( e[i-1], z );
-		e[i-1] = std::pow( std::pow( e[i-1], 2 ) + std::pow( z, 2 ) , 0.5 );
-	
-		givens_rotation( p.first, p.second, q[i-1], e[i] );
-		for( j = 0; j < W.size1(); ++j )
-			givens_rotation( p.first, p.second, W(j,i-1), W(j,i) );
-
-		z = p.second * q[i];
-		q[i] = p.first * q[i];
-
-		p = make_givens_rotation( q[i-1], z );
-		q[i-1] = std::pow( std::pow( q[i-1], 2 ) + std::pow( z, 2 ) , 0.5 );
-	
-		givens_rotation( p.first, p.second, e[i], q[i] );
-		for( j = 0; j < G.size2(); ++j )
-			givens_rotation( p.first, p.second, G(i-1,j), G(i,j) );
-
-		if( i == n - 1 )
-			break;
-
-		z = p.second * e[i+1];
-		e[i+1] = p.first * e[i+1];
-
-	}
-
-	return 1;
-}
 
 template<class T> std::pair< matrix< T >, matrix< T > > singular_decomposition( matrix< T >& A ){
 	typename matrix< T >::size_type i,j;
@@ -135,42 +74,26 @@ template<class T> std::pair< matrix< T >, matrix< T > > singular_decomposition( 
 
 	std::pair< matrix< T >, matrix< T > > QH = transform_to_bidiagonal( A );
 
-	vector< typename matrix< T >::value_type > q( A.size2() );
-	vector< typename matrix< T >::value_type > e( A.size2() );
+	std::pair< matrix< T >, matrix< T > > GW = qr_decomposition( A );
 
-	q[0]=A(0,0);
-	for( i = 1; i < q.size(); ++i ){
-		q[i] = A(i,i);
-		e[i] = A(i-1,i);
-	}
+	QH.first  = prod( GW.first, QH.first );
+	QH.second = prod( QH.second, GW.second );
 
-	for( i = q.size(); i > 1; --i ){
-		while( std::abs( e[i - 1] ) > std::numeric_limits< typename matrix< T >::value_type >::epsilon() ){
-			qr_decomposition( q, e, i, QH.first, QH.second );
-		}
-	}
-
-	for( i = 0; i < q.size(); i++ )
-		if( q[i] < 0 ){
- 			q[i] = - q[i];
+	for( i = 0; i < A.size2(); i++ )
+		if( A(i,i) < 0 ){
+ 			A(i,i) = - A(i,i);
 			QH.second(i,i) = - QH.second(i,i);
 		}
 
-	for( i = 0; i < q.size(); i++ ){
-		typename matrix< T >::size_type m = i + find_max( vector_range< vector< typename matrix< T >::value_type > >(q, range (i, q.size())) );
+	for( i = 0; i < A.size2(); i++ ){
+		typename matrix< T >::size_type m = find_max( i, A.size2(), A );
 		if( m == i ) continue;
 		// swap m and i elements
-		std::swap( q[m], q[i] );
-		matrix_column< matrix< typename matrix< T >::value_type > >(QH.first, m).
-		    swap( matrix_column< matrix< typename matrix< T >::value_type > >(QH.first, i) );
-		matrix_row< matrix< typename matrix< T >::value_type > >(QH.second, m).
-		    swap( matrix_row< matrix< typename matrix< T >::value_type > >(QH.second, i) );
-	}
-
-	A(0,0)=q[0];
-	for( i = 1; i < q.size(); ++i ){
-		A(i,i) = q[i];
-		A(i-1,i) = e[i];
+		std::swap( A(m,m), A(i,i) );
+		matrix_row< matrix< typename matrix< T >::value_type > >(QH.first, m).
+		    swap( matrix_row< matrix< typename matrix< T >::value_type > >(QH.first, i) );
+		matrix_column< matrix< typename matrix< T >::value_type > >(QH.second, m).
+		    swap( matrix_column< matrix< typename matrix< T >::value_type > >(QH.second, i) );
 	}
 
 	return QH;

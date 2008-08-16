@@ -52,6 +52,8 @@ template<class T> void qr_left_givens_transform(
 
 	for( i = s + 1; i < n ; ++i ){
 
+		if( std::abs( z ) < std::numeric_limits< typename matrix< T >::value_type >::epsilon() )
+			return;
 		p = make_givens_rotation( q[i], z );
 		q[i] = std::pow( std::pow( q[i], 2 ) + std::pow( z, 2 ) , 0.5 );
 		z = 0;
@@ -89,6 +91,8 @@ template<class T> void qr_right_givens_transform(
 
 	for( i = n - 2; i >= s; --i ){ // NOTE: i >= s is eq true because i,s is unsigned values.
 
+		if( std::abs( z ) < std::numeric_limits< typename matrix< T >::value_type >::epsilon() )
+			return;
 		p = make_givens_rotation( q[i], z );
 		q[i] = std::pow( std::pow( q[i], 2 ) + std::pow( z, 2 ) , 0.5 );
 		z = 0;
