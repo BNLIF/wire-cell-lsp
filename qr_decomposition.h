@@ -101,6 +101,40 @@ template<class T> void qr_right_givens_transform(
 	}
 }
 
+template<class T> void qr_decomposition_regular_cell(
+	vector< T >& q,
+	vector< T >& e,
+	typename matrix< T >::size_type s,
+	typename matrix< T >::size_type n,
+	matrix< T >& G,
+	matrix< T >& W ){
+	typename matrix< T >::size_type i;
+	typename matrix< T >::size_type l;
+
+	assert( s >= 0 );
+	assert( s < n );
+	assert( n <= G.size1() );
+	assert( n <= W.size2() );
+	assert( n <= q.size() );
+	assert( n <= e.size() );
+
+	if( s == n - 1 )
+		return;
+
+	for( i = n; i > s + 1; --i ){
+		while( std::abs( e[i-1] ) > std::numeric_limits< typename matrix< T >::value_type >::epsilon() ){
+			//std::cout << e << q << std::endl;
+			l = qr_decomposition_iteration( q, e, s, i, G, W );
+			//std::cout << l << std::endl;
+			if( l > s ){
+				qr_decomposition_regular_cell( q, e, s + l, i, G, W );
+				qr_decomposition_regular_cell( q, e, s, s + l, G, W );
+				return;
+			}
+		}
+	}
+}
+
 template<class T> typename matrix< T >::size_type qr_decomposition_iteration(
 	vector< T >& q,
 	vector< T >& e,
@@ -159,7 +193,7 @@ template<class T> typename matrix< T >::size_type qr_decomposition_iteration(
 	}
 
 	e[s + 0]=0;
-	return 0;
+	return s;
 }
 
 template<class T> void qr_decomposite_cell(
@@ -178,11 +212,7 @@ template<class T> void qr_decomposite_cell(
 
 
 
-	for( i = q.size(); i > 1; --i ){
-		while( std::abs( e[i - 1] ) > std::numeric_limits< typename matrix< T >::value_type >::epsilon() ){
-			qr_decomposition( q, e, 0, i, G, W );
-		}
-	}
+
 }
 
 template<class T> std::pair< matrix< T >, matrix< T > > qr_decomposition( matrix< T >& B ){

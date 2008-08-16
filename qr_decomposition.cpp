@@ -16,14 +16,10 @@ int main(){
 
 	for( int i=0;i<A.size1();++i)
 		for( int j=0;j<A.size2();++j)
-			A(i,j) = ( i == j ? i + 2 : ( i == j - 1 ? 2*j+1 : 0 ) );
-
-	A(0,1)=0;
-	A(3,3)=0;
+			A(i,j) = ( i == j ? 3*i + j + 1: ( i == j - 1 ? 2*j+1 : 0 ) );
 
 	A0=A;
 	std::cout << A << std::endl;
-
 
 	vector< double > q( A.size2() );
 	vector< double > e( A.size2() );
@@ -36,7 +32,8 @@ int main(){
 	}
 
 	//lsp::qr_left_givens_transform( q, e, 2, q.size(), G );
-	lsp::qr_right_givens_transform( q, e, 1, q.size(), W );
+	//lsp::qr_right_givens_transform( q, e, 1, q.size(), W );
+	lsp::qr_decomposition_regular_cell( q, e, 0, q.size(), G, W );
 
 	/* pack */
 	A(0,0) = q[0];
@@ -46,10 +43,17 @@ int main(){
 	}
 
 	std::cout << A << std::endl;
+	//std::cout << G << std::endl;
 	//std::cout << W << std::endl;
 
-	std::cout << prod( A, trans(W) ) << std::endl;
-	std::cout << prod( A0, W ) << std::endl;
+	A = prod( A, trans(W) );
+	A = prod( trans(G), A );
+	std::cout << A << std::endl;
+	A0 = prod( A0, W );
+	A0 = prod( G, A0 );
+	std::cout << A0 << std::endl;
+//	std::cout << prod( A, trans(W) ) << std::endl;
+//	std::cout << prod( A0, W ) << std::endl;
 
 	return 0;
 }
