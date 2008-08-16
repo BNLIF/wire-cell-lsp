@@ -10,13 +10,17 @@
 int main(){
 	using namespace boost::numeric::ublas;
 
-	matrix< double > A0,A = zero_matrix< double >(6,4);
+	matrix< double > A0,A = zero_matrix< double >(6,5);
 	matrix< double > G = identity_matrix< double >( A.size1() );
 	matrix< double > W = identity_matrix< double >( A.size2() );
 
 	for( int i=0;i<A.size1();++i)
 		for( int j=0;j<A.size2();++j)
-			A(i,j) = ( i == j ? 3*i + j + 1: ( i == j - 1 ? 2*j+1 : 0 ) );
+			A(i,j) = ( i == j ? 1: ( i == j - 1 ? 1 : 0 ) );
+	A(1,1)=0;
+
+	A(3,4)=0;
+	A(3,3)=0;
 
 	A0=A;
 	std::cout << A << std::endl;
@@ -33,7 +37,7 @@ int main(){
 
 	//lsp::qr_left_givens_transform( q, e, 2, q.size(), G );
 	//lsp::qr_right_givens_transform( q, e, 1, q.size(), W );
-	lsp::qr_decomposition_regular_cell( q, e, 0, q.size(), G, W );
+	lsp::qr_decomposite_cell( q, e, 0, q.size(), G, W );
 
 	/* pack */
 	A(0,0) = q[0];
