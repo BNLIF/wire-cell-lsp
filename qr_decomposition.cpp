@@ -12,11 +12,14 @@ int main(){
 
 	matrix< double > A0,A = zero_matrix< double >(6,4);
 	matrix< double > G = identity_matrix< double >( A.size1() );
+	matrix< double > W = identity_matrix< double >( A.size2() );
+
 	for( int i=0;i<A.size1();++i)
 		for( int j=0;j<A.size2();++j)
-			A(i,j) = ( i == j ? i + 1 : ( i == j - 1 ? j + 1 : 0 ) );
+			A(i,j) = ( i == j ? i + 2 : ( i == j - 1 ? 2*j+1 : 0 ) );
 
-	A(2,2)=0;
+	A(0,1)=0;
+	A(3,3)=0;
 
 	A0=A;
 	std::cout << A << std::endl;
@@ -32,7 +35,8 @@ int main(){
 		e[i] = A(i-1,i);
 	}
 
-	lsp::qr_left_givens_transform( q, e, 2, q.size(), G );
+	//lsp::qr_left_givens_transform( q, e, 2, q.size(), G );
+	lsp::qr_right_givens_transform( q, e, 1, q.size(), W );
 
 	/* pack */
 	A(0,0) = q[0];
@@ -42,10 +46,10 @@ int main(){
 	}
 
 	std::cout << A << std::endl;
-//	std::cout << G << std::endl;
+	//std::cout << W << std::endl;
 
-	std::cout << prod( trans(G), A ) << std::endl;
-	std::cout << prod( G, A0 ) << std::endl;
+	std::cout << prod( A, trans(W) ) << std::endl;
+	std::cout << prod( A0, W ) << std::endl;
 
 	return 0;
 }

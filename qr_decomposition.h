@@ -56,10 +56,48 @@ template<class T> void qr_left_givens_transform(
 		q[i] = std::pow( std::pow( q[i], 2 ) + std::pow( z, 2 ) , 0.5 );
 		z = 0;
 
-		if( i < n - 1 )
-			givens_rotation( p.first, p.second, e[i+1], z );
+		
 		for( j = 0; j < G.size2(); ++j )
-			givens_rotation( p.first, p.second, G(i,j), G(s,j) );
+			givens_rotation( p.first, p.second, G(i,j), G(s,j) );	
+		if( i == n - 1 )
+			break;
+		givens_rotation( p.first, p.second, e[i+1], z );
+	}
+}
+
+template<class T> void qr_right_givens_transform(
+	vector< T >& q,
+	vector< T >& e,
+	typename matrix< T >::size_type s,
+	typename matrix< T >::size_type n,
+	matrix< T >& W ){
+	typename matrix< T >::size_type i,j;
+	typename matrix< T >::value_type z;
+	/* правые ( вертикальные ) вращения Гивенса между столбцами n-1 и j, где j пробегает от n-2, до s */
+
+	assert( s >= 0 );
+	assert( s < n - 1 );
+	assert( n <= q.size() );
+	assert( n <= e.size() );
+	assert( n <= W.size2() );
+
+	std::pair< typename matrix< T >::value_type,
+	           typename matrix< T >::value_type > p;
+
+	z = e[n-1];
+	e[n-1] = 0;
+
+	for( i = n - 2; i >= s; --i ){ // NOTE: i >= s is eq true because i,s is unsigned values.
+
+		p = make_givens_rotation( q[i], z );
+		q[i] = std::pow( std::pow( q[i], 2 ) + std::pow( z, 2 ) , 0.5 );
+		z = 0;
+
+		for( j = 0; j < W.size1(); ++j )
+			givens_rotation( p.first, p.second, W(j,i), W(j,n-1) );
+		if( i == s )
+			break;
+		givens_rotation( p.first, p.second, e[i], z );
 	}
 }
 
