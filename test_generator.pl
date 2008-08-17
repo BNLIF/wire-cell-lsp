@@ -1,6 +1,8 @@
 #!/usr/bin/perl
 
-($m,$n)=(int(rand()*14)+2,int(rand()*14)+2);
+while( $m < $n ){
+	($m,$n)=(int(rand()*14)+2,int(rand()*14)+2);
+}
 
 print "$m $n\n";
 
