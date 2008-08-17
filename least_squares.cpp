@@ -9,6 +9,7 @@ int main(){
 	using namespace boost::numeric::ublas;
 
 	std::cout << std::numeric_limits< double >::epsilon() << std::endl;
+	std::cout << std::numeric_limits< double >::round_error() << std::endl;
 
 	matrix< double > A0,A(3,3);
 	vector< double > b0,b(3);

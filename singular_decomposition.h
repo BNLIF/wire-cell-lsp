@@ -84,7 +84,11 @@ template<class T> std::pair< matrix< T >, matrix< T > > singular_decomposition( 
 
 	std::pair< matrix< T >, matrix< T > > QH = transform_to_bidiagonal( A );
 
-//	std::cout <<A << std::endl;
+	typename matrix< T >::value_type err = ( 3 * A.size1() + 37 ) * norm_frobenius( A ) * std::numeric_limits< typename matrix< T >::value_type >::epsilon();
+	for( i = 0; i < A.size1(); ++i )
+		for( j = 0; j < A.size2(); j++ )
+			if( std::abs( A(i,j) ) < err )
+				A(i,j) = 0;
 
 	std::pair< matrix< T >, matrix< T > > GW = qr_decomposition( A );
 

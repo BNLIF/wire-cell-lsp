@@ -30,6 +30,8 @@ int main(){
 	
 	std::cout << std::endl << B << std::endl;
 
+	std::cout << norm_frobenius(A) << " " << norm_frobenius(B) << std::endl;
+
 	A = prod( A, QH.second );
 	A = prod( QH.first, A );
 	std::cout << std::endl << A << std::endl;

@@ -12,15 +12,15 @@ int main(){
 
 	matrix< double > A(3,3),B;
 	
-	A(0,0)=0.0000;
+	A(0,0)=0.0;
 	A(1,0)=21.4207;
-	A(2,0)=0.0000;
+	A(2,0)=0.0;
 	A(0,1)=68.9777;
 	A(1,1)=23.3947;
 	A(2,1)=81.6124;
-	A(0,2)=0.0000;
+	A(0,2)=0.0;
 	A(1,2)=91.3194;
-	A(2,2)=0.0000;
+	A(2,2)=0.0;
 	/*A(0,0)=1;
 	A(1,0)=2;
 	A(0,1)=4;
@@ -39,6 +39,8 @@ int main(){
 	std::cout << WV.second << std::endl;
 
 	std::cout << std::endl << B << std::endl;
+
+	std::cout << norm_frobenius(A) << " " << norm_frobenius(B) << std::endl;
 
 	A = prod( A, WV.second );
 	A = prod( WV.first, A );

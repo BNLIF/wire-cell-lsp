@@ -10,17 +10,17 @@ using namespace boost::numeric::ublas;
 
 namespace lsp{
 
-template< class T > std::pair< T, T > make_householder_transform(
-	typename vector< T >::size_type l,
-	typename vector< T >::size_type p,
-	const vector< T >& v ){
-	typename vector< T >::size_type i;
+template< class T > std::pair< typename T::value_type, typename T::value_type > make_householder_transform(
+	typename T::size_type l,
+	typename T::size_type p,
+	const T& v ){
+	typename T::size_type i;
 
 	assert( p < l );
 	assert( p >= 0 );
 	assert( p < v.size() );
 
-	typename vector< T >::value_type w( v[p] ),s( 0 ),h;
+	typename T::value_type w( v[p] ),s( 0 ),h( 0 );
 
 	for( i = l; i < v.size(); i++ ){
 		if( std::abs( v[i] ) > std::abs( w ) )
@@ -34,36 +34,38 @@ template< class T > std::pair< T, T > make_householder_transform(
 
 	h = v[p] - s;
 
-	return std::make_pair<T,T>(h,s);
+	return std::make_pair< typename T::value_type, typename T::value_type >(h, s);
 }
 
-template< class T > void householder_transform(
-	typename vector< T >::size_type l,
-	typename vector< T >::size_type p,
-	T h,
-	T s,
-	const vector< T >& v,
-	matrix< T >& A ){
-	typename vector< T >::size_type i,j;
-	typename vector< T >::value_type b;
+template< class T, class U > void householder_transform(
+	typename T::size_type l,
+	typename T::size_type p,
+	typename T::value_type h,
+	typename T::value_type s,
+	const T& v,
+	U& A ){
+	typename T::size_type i,j;
+	typename T::value_type b;
 
 	assert( p < l );
 	assert( p >= 0 );
 	assert( v.size() == A.size1() );
 	assert( p < A.size1() );
 
+	typename U::size_type m = A.size1(), n = A.size2();
+
 	b = s * h;
-	if( std::abs(b) <  std::numeric_limits< typename vector< T >::value_type >::epsilon() )
+	if( std::abs(b) <  std::numeric_limits< typename T::value_type >::epsilon() )
 		return;
 
-	for( j = 0; j < A.size2(); ++j ){
+	for( j = 0; j < n; ++j ){
 		s = A(p,j) * h;
-		for( i = l; i < v.size(); i++ )
+		for( i = l; i < m; i++ )
 			s += A(i,j) * v[i];
 		s = s / b;
 		A(p,j) += s * h;
 
-		for( i = l; i < v.size(); i++ )
+		for( i = l; i < m; i++ )
 			A(i,j) += s * v[i];
 	}
 }
