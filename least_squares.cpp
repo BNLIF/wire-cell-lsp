@@ -8,17 +8,23 @@
 int main(){
 	using namespace boost::numeric::ublas;
 
-	matrix< double > A0,A(3,2);
+	std::cout << std::numeric_limits< double >::epsilon() << std::endl;
+
+	matrix< double > A0,A(3,3);
 	vector< double > b0,b(3);
 
-	b[0]=1;b[1]=2;b[2]=4;
-	A(0,0)=3;
-	A(1,0)=0;
-	A(2,0)=4;
-	A(0,1)=-2;
-	A(1,1)=3;
-	A(2,1)=4;
 
+	b[0]=10.9457;b[1]=57.4715;b[2]=0;
+	A(0,0)=0.0000;
+	A(1,0)=21.4207;
+	A(2,0)=0.0000;
+	A(0,1)=68.9777;
+	A(1,1)=23.3947;
+	A(2,1)=81.6124;
+	A(0,2)=0.0000;
+	A(1,2)=91.3194;
+	A(2,2)=0.0000;
+	
 	std::cout << A.size1() << std::endl;
 
 	std::cout << A << std::endl;

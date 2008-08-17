@@ -1,4 +1,6 @@
 #include "householder_transform.h"
+#include "singular_decomposition.h"
+
 
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/vector.hpp>
@@ -8,22 +10,33 @@
 int main(){
 	using namespace boost::numeric::ublas;
 
-	vector<double>::size_type l = 4;
-	vector<double>::size_type p = 3;
-	vector<double> v(10);
-
-	for (unsigned i = 0; i < v.size (); ++ i)
-		v(i) = 1;
+	matrix< double > A(3,3),B;
 	
-	matrix<double> Q = lsp::make_householder_transform( l, p, v );
+	A(0,0)=0.0000;
+	A(1,0)=21.4207;
+	A(2,0)=0.0000;
+	A(0,1)=68.9777;
+	A(1,1)=23.3947;
+	A(2,1)=81.6124;
+	A(0,2)=0.0000;
+	A(1,2)=91.3194;
+	A(2,2)=0.0000;
 
-	vector<double> f = prod(Q, v);
+	B = A;
 
-	std::cout << l << std::endl;
-	std::cout << p << std::endl;
-	std::cout << v << std::endl;
-	std::cout << Q << std::endl;
-	std::cout << f << std::endl;
+	std::cout << std::endl << A << std::endl;
+
+	std::pair< matrix< double >, matrix< double > > QH = lsp::transform_to_bidiagonal( B );
+	
+	std::cout << std::endl << B << std::endl;
+
+	A = prod( A, QH.second );
+	A = prod( QH.first, A );
+	std::cout << std::endl << A << std::endl;
+
+	B = prod( B, trans( QH.second ) );
+	B = prod( trans( QH.first ), B );
+	std::cout << std::endl << B << std::endl;
 
 	return 0;
 }

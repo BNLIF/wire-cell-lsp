@@ -35,7 +35,12 @@ template<class T> vector< T > least_squares( matrix< T >& A, vector< T >& b ){
 	std::pair< matrix< typename matrix< T >::value_type >,
 	           matrix< typename matrix< T >::value_type > > WV = singular_decomposition( A );
 
+	std::cout << std::endl << WV.first << std::endl;
+	std::cout << std::endl << WV.second << std::endl;
+
 	b = prod( WV.first, b );
+
+	std::cout <<"b:"<<b<<std::endl;
 	
 	vector< typename matrix< T >::value_type > p( A.size2() );
 	for( i = 0; i < A.size2(); ++i ){
@@ -44,6 +49,8 @@ template<class T> vector< T > least_squares( matrix< T >& A, vector< T >& b ){
 		else
 			p[i] = 0;
 	}
+
+	std::cout <<"p:"<<p<<std::endl;
 
 	return prod( WV.second, p );
 }

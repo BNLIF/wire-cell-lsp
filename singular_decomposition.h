@@ -20,28 +20,38 @@ namespace lsp{
 template<class T> std::pair< matrix< T >, matrix< T > > transform_to_bidiagonal( matrix< T >& A ) {
 	typename matrix< T >::size_type i,j;
 	typename matrix< T >::size_type r = std::min(A.size1(),A.size2());
-	matrix< T > cQ,cH;
+	std::pair< T, T > hs;
 	matrix< T > Q = identity_matrix< typename vector< T >::value_type >( A.size1() );
 	matrix< T > H = identity_matrix< typename vector< T >::value_type >( A.size2() );
 
 	for( i = 0; i < r - 1; ++i ){
-		matrix_column< matrix< T > > col(A, i);
-		cQ = make_householder_transform( i + 1, i, vector<T>(col) );
-		A = prod( cQ, A );
-		Q = prod( cQ, Q );
+		vector<T> col = matrix_column< matrix< T > > (A, i);
+		hs = make_householder_transform( i + 1, i, col );
+		householder_transform( i + 1, i, hs.first, hs.second, col, Q );
+		householder_transform( i + 1, i, hs.first, hs.second, col, A );
+		//A = prod( cQ, A );
+		//Q = prod( cQ, Q );
 
-		matrix_row< matrix< T > > row(A, i);
-		cH = make_householder_transform( i + 2, i + 1, vector<T>(row) );
-		A = prod( A, cH );
-		H = prod( H, cH );
+		vector<T> row = matrix_row< matrix< T > > (A, i);
+		hs = make_householder_transform( i + 2, i + 1, row );
+		householder_transform( i + 2, i + 1, hs.first, hs.second, row, H );
+		A = trans( A );
+		householder_transform( i + 2, i + 1, hs.first, hs.second, row, A );
+		A = trans( A );
+		//A = prod( A, cH );
+		//H = prod( H, cH );
 	}
 	
 	// i = r - 1
-	matrix_column< matrix< T > > col(A, i);
-	cQ = make_householder_transform( i + 1, i, vector<T>(col) );
-	A = prod( cQ, A );
-	Q = prod( cQ, Q );
-
+	vector<T> col = matrix_column< matrix< T > > (A, i);
+	hs = make_householder_transform( i + 1, i, col );
+	householder_transform( i + 1, i, hs.first, hs.second, col, Q );
+	householder_transform( i + 1, i, hs.first, hs.second, col, A );
+	
+	//A = prod( cQ, A );
+	//Q = prod( cQ, Q );
+	
+	H = trans( H );
 	return std::make_pair< matrix< T >, matrix< T > >(Q,H);
 }
 
@@ -73,6 +83,8 @@ template<class T> std::pair< matrix< T >, matrix< T > > singular_decomposition( 
 	assert( A.size2() > 1 );
 
 	std::pair< matrix< T >, matrix< T > > QH = transform_to_bidiagonal( A );
+
+//	std::cout <<A << std::endl;
 
 	std::pair< matrix< T >, matrix< T > > GW = qr_decomposition( A );
 

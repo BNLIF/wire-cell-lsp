@@ -10,7 +10,7 @@ using namespace boost::numeric::ublas;
 
 namespace lsp{
 
-template< class T > matrix< T > make_householder_transform(
+template< class T > std::pair< T, T > make_householder_transform(
 	typename vector< T >::size_type l,
 	typename vector< T >::size_type p,
 	const vector< T >& v ){
@@ -20,24 +20,52 @@ template< class T > matrix< T > make_householder_transform(
 	assert( p >= 0 );
 	assert( p < v.size() );
 
-	typename vector< T >::value_type s( 0 );
-	s += std::pow( v[p], 2 );
+	typename vector< T >::value_type w( v[p] ),s( 0 ),h;
+
+	for( i = l; i < v.size(); i++ ){
+		if( std::abs( v[i] ) > std::abs( w ) )
+			w = v[i];
+	}
+
+	s += std::pow( v[p]/w, 2 );
 	for( i = l; i < v.size(); i++ )
-		s += std::pow( v[i], 2 );
-	s = ( v[p] < 0 ? 1 : -1 ) * std::pow( s, 0.5 );
+		s += std::pow( v[i]/w, 2 );
+	s = ( v[p] < 0 ? 1 : -1 ) * w * std::pow( s, 0.5 );
 
-	vector< T > u( v );
-	l = std::min( l, u.size() );
-	for( i = 0; i < l; i++ )
-		u[i] = 0;
-	u[p] = v[p] - s;
+	h = v[p] - s;
 
-	typename vector< T >::value_type b = s * u[p];
+	return std::make_pair<T,T>(h,s);
+}
 
-	if( std::abs( b ) < std::numeric_limits< typename vector< T >::value_type >::epsilon() )
-		return identity_matrix< typename vector< T >::value_type >( v.size() );
+template< class T > void householder_transform(
+	typename vector< T >::size_type l,
+	typename vector< T >::size_type p,
+	T h,
+	T s,
+	const vector< T >& v,
+	matrix< T >& A ){
+	typename vector< T >::size_type i,j;
+	typename vector< T >::value_type b;
 
-	return identity_matrix< typename vector< T >::value_type >( v.size() ) + ( outer_prod(u, u) ) / b;
+	assert( p < l );
+	assert( p >= 0 );
+	assert( v.size() == A.size1() );
+	assert( p < A.size1() );
+
+	b = s * h;
+	if( std::abs(b) <  std::numeric_limits< typename vector< T >::value_type >::epsilon() )
+		return;
+
+	for( j = 0; j < A.size2(); ++j ){
+		s = A(p,j) * h;
+		for( i = l; i < v.size(); i++ )
+			s += A(i,j) * v[i];
+		s = s / b;
+		A(p,j) += s * h;
+
+		for( i = l; i < v.size(); i++ )
+			A(i,j) += s * v[i];
+	}
 }
 
 };

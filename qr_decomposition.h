@@ -217,9 +217,13 @@ template<class T> void qr_decomposite_cell(
 	if( s == n - 1 )
 		return;
 
+	//std::cout << "[ "<<s<<"; "<<n<<"]"<<std::endl;
+	//std::cout << e << q << std::endl;
+
 	/* Looking for q_i=0 */
 	for( i = s; i < n - 1 ; ++i ){
 		if( std::abs(q[ n - i - 2 + s ]) < std::numeric_limits< typename matrix< T >::value_type >::epsilon() ){
+	//		std::cout << "left_transofrm" << std::endl;
 			qr_left_givens_transform( q, e, n - i - 2 + s, n, G );
 			qr_decomposite_cell( q, e, n - i - 2 + s + 1, n, G, W );
 			qr_decomposite_cell( q, e, s, n - i - 2 + s + 1, G, W );
@@ -228,7 +232,10 @@ template<class T> void qr_decomposite_cell(
 	}
 
 	/* Looking if q_{n-1}=0 */
+	//std::cout << " O_p " << std::abs(q[n-1])<< " " << std::numeric_limits< typename matrix< T >::value_type >::epsilon() << std::endl;
+
 	if( std::abs(q[n-1]) < std::numeric_limits< typename matrix< T >::value_type >::epsilon() ){
+	//	std::cout << "right_transofrm" << std::endl;
 		qr_right_givens_transform( q, e, s, n, W );
 		qr_decomposite_cell( q, e, n - 1, n, G, W );
 		qr_decomposite_cell( q, e, s, n - 1, G, W );
@@ -236,6 +243,7 @@ template<class T> void qr_decomposite_cell(
 	}
 
 	/* pray! */
+	//std::cout << "regular" << std::endl;
 	qr_decomposite_regular_cell( q, e, s, n, G, W );
 }
 
