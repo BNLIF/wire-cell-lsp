@@ -10,13 +10,14 @@ int main(){
 	using namespace boost::numeric::ublas;
 
 
-	matrix< double > A(4,4),B;
+	matrix< double > A(3,2),B;
 	
-	for( int i = 0; i < A.size1(); i++ )
-		for( int j = 0; j < A.size2(); j++ )
-			A(i,j) = 0;
-	A(0,1)=2;
-	A(1,1)=4;
+	A(0,0)=3;
+	A(1,0)=0;
+	A(2,0)=4;
+	A(0,1)=-2;
+	A(1,1)=3;
+	A(2,1)=4;
 
 	std::cout << std::endl << A << std::endl;
 	B = A;

@@ -8,17 +8,16 @@
 int main(){
 	using namespace boost::numeric::ublas;
 
-	matrix< double > A0,A(2,2);
-	vector< double > b0,b(2);
+	matrix< double > A0,A(3,2);
+	vector< double > b0,b(3);
 
-	for( int i = 0; i < b.size(); i++ )
-		b[i] = i + 1;
-	
-	for( int i = 0; i < A.size1(); i++ )
-		for( int j = 0; j < A.size2(); j++ )
-			A(i,j) = 0;
-	A(0,1)=2;
-	A(1,1)=4;
+	b[0]=1;b[1]=2;b[2]=4;
+	A(0,0)=3;
+	A(1,0)=0;
+	A(2,0)=4;
+	A(0,1)=-2;
+	A(1,1)=3;
+	A(2,1)=4;
 
 	std::cout << A.size1() << std::endl;
 

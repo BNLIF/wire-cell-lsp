@@ -79,10 +79,11 @@ template<class T> std::pair< matrix< T >, matrix< T > > singular_decomposition( 
 	QH.first  = prod( GW.first, QH.first );
 	QH.second = prod( QH.second, GW.second );
 
-	for( i = 0; i < A.size2(); i++ )
+	for( i = 0; i < A.size2(); ++i )
 		if( A(i,i) < 0 ){
  			A(i,i) = - A(i,i);
-			QH.second(i,i) = - QH.second(i,i);
+			for( j = 0; j < QH.second.size1(); ++j )
+				QH.second(j,i) = - QH.second(j,i);
 		}
 
 	for( i = 0; i < A.size2(); i++ ){
