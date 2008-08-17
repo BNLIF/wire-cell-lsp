@@ -25,7 +25,7 @@ print MAC 'M : matrix (';
 print MAC '[';
 for($i=0;$i < $#x+1;$i++){
 	print MAC $x[$i];
-	if( ($i+1) % 3 == 0 ){
+	if( ($i+1) % ($n+1) == 0 ){
 		print MAC ']';
 		if( $i+2 < $#x+1 ){
 			print MAC ', [';
