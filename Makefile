@@ -1,4 +1,4 @@
-all: givens_rotation.test householder_transform.test singular_decomposition.test least_squares.test qr_decomposition.test
+all: givens_rotation.test householder_transform.test singular_decomposition.test least_squares.test qr_decomposition.test lsp
 
 givens_rotation.test: givens_rotation.cpp givens_rotation.h
 	$(CXX) -o givens_rotation.test -DTEST givens_rotation.cpp
@@ -14,6 +14,9 @@ qr_decomposition.test: qr_decomposition.cpp qr_decomposition.h
 
 least_squares.test: least_squares.cpp least_squares.h
 	$(CXX) -o least_squares.test -DTEST least_squares.cpp
+
+lsp: lsp.cpp
+	$(CXX) -o lsp -DNDEBUG lsp.cpp
 
 clean:
 	rm -f *.o
