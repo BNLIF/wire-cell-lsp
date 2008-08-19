@@ -57,6 +57,7 @@ for($i=1;$i < $n+1;$i++){
 	}
 }
 print MAC '] );'."\n";
+print MAC 'for i:1 step 1 thru length(%rnum_list) do r:subst(0,%rnum_list[i],r);'."\n";
 print MAC 'r : r[1];'."\n";
 print MAC 'for i:1 step 1 thru length(r) do r[i] : part(r[i],2);'."\n";
 print MAC 'printf( true, "~{~,4f ~}~%", r );'."\n";
