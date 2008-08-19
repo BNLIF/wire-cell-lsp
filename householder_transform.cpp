@@ -10,18 +10,22 @@
 int main(){
 	using namespace boost::numeric::ublas;
 
-	matrix< double > A(10,2),B;
-	
-A(0,0)=0.0000;  A(0,1)=37.6098;
-A(1,0)=0.0000;  A(1,1)=0.0000;
-A(2,0)=58.8287; A(2,1)=0.0000;
-A(3,0)=82.3647; A(3,1)=0.0000;
-A(4,0)=0.0000;  A(4,1)=91.1341;
-A(5,0)=0.0000;  A(5,1)=2.9960;
-A(6,0)=0.0000;  A(6,1)=95.6057;
-A(7,0)=0.0000;  A(7,1)=0.0000;
-A(8,0)=0.0000;  A(8,1)=15.2655;
-A(9,0)=3.8682;  A(9,1)=0.0000;
+	unsigned int i,j,m,n;
+	std::cin >> m >> n;
+
+	assert( m > 1 );
+	assert( n > 1 );
+
+	matrix< double > A( m, n ),B;
+	vector< double > b( m);
+
+	for( i = 0; i < m; i++ ){
+	for( j = 0; j < n; j++ ){
+		std::cin >> A(i,j);
+	}
+		std::cin >> b(i);
+	}
+
 	B = A;
 
 	std::cout << std::endl << A << std::endl;
@@ -41,7 +45,7 @@ A(9,0)=3.8682;  A(9,1)=0.0000;
 
 	B = prod( B, trans( QH.second ) );
 	B = prod( trans( QH.first ), B );
-	std::cout << std::endl << B << std::endl;
+	std::cout << std::endl << B << std::endl;	
 
 	return 0;
 }
