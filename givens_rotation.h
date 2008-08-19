@@ -11,13 +11,12 @@ using namespace boost::numeric::ublas;
 namespace lsp{
 
 template< class T > std::pair< T, T > make_givens_rotation( T x, T y ){
-	assert( std::abs( x ) > std::numeric_limits< T >::epsilon() ||
-	        std::abs( y ) > std::numeric_limits< T >::epsilon() );
+	assert( x != 0 || y != 0 );
 
 	T w,q,c,s;
 
 	if( std::abs( x ) < std::abs( y ) ) {
-		if( std::abs( y ) < std::numeric_limits< T >::epsilon() ){
+		if( std::abs( y ) < std::abs( x ) * std::numeric_limits< T >::epsilon() ){
 			c = 1; s = 0;
 		} else {
 			w = x / y;
@@ -53,8 +52,7 @@ template< class T > matrix< T > make_givens_rotation(
 	assert( i < v.size() );
 	assert( k < v.size() );
 	assert( i < k );
-	assert( std::abs( v[i] ) > std::numeric_limits< typename vector< T >::value_type >::epsilon() ||
-	        std::abs( v[k] ) > std::numeric_limits< typename vector< T >::value_type >::epsilon() );
+	assert( v[i] !=0 || v[k] !=0  );
 
 	std::pair< typename vector< T >::value_type,
 	           typename vector< T >::value_type > p = make_givens_rotation( v[i], v[k] );

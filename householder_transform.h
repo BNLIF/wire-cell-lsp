@@ -33,6 +33,10 @@ template< class T > std::pair< typename T::value_type, typename T::value_type > 
 	s = ( v[p] < 0 ? 1 : -1 ) * w * std::pow( s, 0.5 );
 
 	h = v[p] - s;
+	if( std::abs(h) < std::numeric_limits< typename T::value_type >::epsilon() ){
+		h = 0;
+		s = v[p];
+	}
 
 	return std::make_pair< typename T::value_type, typename T::value_type >(h, s);
 }
@@ -55,7 +59,7 @@ template< class T, class U > void householder_transform(
 	typename U::size_type m = A.size1(), n = A.size2();
 
 	b = s * h;
-	if( std::abs(b) <  std::numeric_limits< typename T::value_type >::epsilon() )
+	if( std::abs(b) < std::abs(s) * std::numeric_limits< typename T::value_type >::epsilon() )
 		return;
 
 	for( j = 0; j < n; ++j ){

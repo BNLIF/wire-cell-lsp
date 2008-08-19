@@ -50,7 +50,26 @@ template<class T> std::pair< matrix< T >, matrix< T > > transform_to_bidiagonal(
 	
 	//A = prod( cQ, A );
 	//Q = prod( cQ, Q );
-	
+
+	typename matrix< T >::value_type err;
+	err = std::abs( ( 3 * std::max( A.size1(), A.size2() ) - 6 * r + 37 ) * ( 2 * r - 1 ) * norm_frobenius( A ) * std::numeric_limits< typename matrix< T >::value_type >::epsilon() );
+	for( i = 0; i < A.size1(); ++i )
+		for( j = 0; j < A.size2(); j++ )
+			if( std::abs( A(i,j) ) < err )
+				A(i,j) = 0;
+
+	err = std::abs( ( 4 * std::max( A.size1(), A.size2() ) + 32 ) * ( 2 + r - 1 ) * norm_frobenius( Q ) * std::numeric_limits< typename matrix< T >::value_type >::epsilon() );
+	for( i = 0; i < Q.size1(); ++i )
+		for( j = 0; j < Q.size2(); j++ )
+			if( std::abs( Q(i,j) ) < err )
+				Q(i,j) = 0;
+
+	err = std::abs( ( 4 * std::max( A.size1(), A.size2() ) + 32 ) * ( 2 + r - 1 ) * norm_frobenius( H ) * std::numeric_limits< typename matrix< T >::value_type >::epsilon() );
+	for( i = 0; i < H.size1(); ++i )
+		for( j = 0; j < H.size2(); j++ )
+			if( std::abs( H(i,j) ) < err )
+				H(i,j) = 0;
+
 	H = trans( H );
 	return std::make_pair< matrix< T >, matrix< T > >(Q,H);
 }
@@ -83,12 +102,6 @@ template<class T> std::pair< matrix< T >, matrix< T > > singular_decomposition( 
 	assert( A.size2() > 1 );
 
 	std::pair< matrix< T >, matrix< T > > QH = transform_to_bidiagonal( A );
-
-	typename matrix< T >::value_type err = ( 3 * A.size1() + 37 ) * norm_frobenius( A ) * std::numeric_limits< typename matrix< T >::value_type >::epsilon();
-	for( i = 0; i < A.size1(); ++i )
-		for( j = 0; j < A.size2(); j++ )
-			if( std::abs( A(i,j) ) < err )
-				A(i,j) = 0;
 
 	std::pair< matrix< T >, matrix< T > > GW = qr_decomposition( A );
 
