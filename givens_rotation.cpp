@@ -8,27 +8,23 @@
 int main(){
 	using namespace boost::numeric::ublas;
 
-	vector<double>::size_type i = 0;
-	vector<double>::size_type k = 1;
-	vector<double> v(3);
+	double x,y;
+	x=1e-34;
+	y=1e-45;
 
-	for (unsigned i = 0; i < v.size (); ++ i)
-		v(i) = 1;
-	
-	matrix<double> G = lsp::make_givens_rotation( 0, 1, v );
+	std::pair<double,double> cs = lsp::make_givens_rotation(x,y);
 
-	vector<double> f = prod(G, v);
+	//std::cout.precision(36);
+	//std::cout << std::fixed;
 
-	std::cout << v << std::endl;
-	std::cout << G << std::endl;
-	std::cout << f << std::endl;
+	std::cout << x << " " << y << std::endl;
+	std::cout << cs.first << " " << cs.second << std::endl;
 
-	G = lsp::make_givens_rotation( 0, 2, f );
-	f = prod(G, f);
+	lsp::givens_rotation( cs.first, cs.second, x, y );
 
-	std::cout << G << std::endl;
-	std::cout << f << std::endl;
+	std::cout << x << " " << y << std::endl;
 
+	std::cout << std::max(x,y) * std::pow( std::pow(x/std::max(x,y),2)+std::pow(y/std::max(x,y),2), 0.5 ) << std::endl;
 
 	return 0;
 }

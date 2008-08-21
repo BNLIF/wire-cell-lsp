@@ -50,10 +50,8 @@ template<class T> void qr_left_givens_transform(
 	z = e[s+1];
 	e[s+1] = 0;
 
-	for( i = s + 1; i < n ; ++i ){
+	for( i = s + 1; i < n ; ++i ) {
 
-		if( std::abs( z ) < std::numeric_limits< typename matrix< T >::value_type >::epsilon() )
-			return;
 		p = make_givens_rotation( q[i], z );
 		q[i] = std::pow( std::pow( q[i], 2 ) + std::pow( z, 2 ) , 0.5 );
 		z = 0;
@@ -64,6 +62,10 @@ template<class T> void qr_left_givens_transform(
 		if( i == n - 1 )
 			break;
 		givens_rotation( p.first, p.second, e[i+1], z );
+		// NOTE: в этом месте если z == 0 можно закончить алгоритим,
+		//       т.к. нет дальнейшей необходимости во вращениях
+		//       ||db|| < 6 * epsilon() * ||a||
+		//       a = ( e[i+1], z )_{0} , b = ( e[i+1], z )_{1}
 	}
 }
 
@@ -89,10 +91,8 @@ template<class T> void qr_right_givens_transform(
 	z = e[n-1];
 	e[n-1] = 0;
 
-	for( i = n - 2; i >= s; --i ){ // NOTE: i >= s is eq true because i,s is unsigned values.
+	for( i = n - 2; i >= s; --i ) { // NOTE: i >= s is eq true because i,s is unsigned values.
 
-		if( std::abs( z ) < std::numeric_limits< typename matrix< T >::value_type >::epsilon() )
-			return;
 		p = make_givens_rotation( q[i], z );
 		q[i] = std::pow( std::pow( q[i], 2 ) + std::pow( z, 2 ) , 0.5 );
 		z = 0;
@@ -115,6 +115,8 @@ template<class T> void qr_decomposite_regular_cell(
 	typename matrix< T >::size_type i;
 	typename matrix< T >::size_type l;
 
+	typename vector< T >::value_type norm_q = norm_2(q) / q.size();
+
 	assert( s >= 0 );
 	assert( s < n );
 	assert( n <= G.size1() );
@@ -126,7 +128,7 @@ template<class T> void qr_decomposite_regular_cell(
 		return;
 
 	for( i = n; i > s + 1; --i ){
-		while( std::abs( e[i-1] ) > std::numeric_limits< typename matrix< T >::value_type >::epsilon() ){
+		while( std::abs( e[i-1] ) > norm_q * std::numeric_limits< typename matrix< T >::value_type >::epsilon() ){
 			l = qr_decomposition_iteration( q, e, s, i, G, W );
 			if( l > s ){ // NOTE: it isn't tested, but I hope it will be work ;)
 				qr_decomposite_regular_cell( q, e, s + l, i, G, W );
@@ -134,6 +136,7 @@ template<class T> void qr_decomposite_regular_cell(
 				return;
 			}
 		}
+		e[i-1] = 0;
 	}
 }
 

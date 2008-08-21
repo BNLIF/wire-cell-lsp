@@ -17,63 +17,6 @@ using namespace boost::numeric::ublas;
 
 namespace lsp{
 
-template<class T> std::pair< matrix< T >, matrix< T > > transform_to_bidiagonal( matrix< T >& A ) {
-	typename matrix< T >::size_type i,j;
-	typename matrix< T >::size_type r = std::min(A.size1(),A.size2());
-	std::pair< T, T > hs;
-	matrix< T > Q = identity_matrix< typename vector< T >::value_type >( A.size1() );
-	matrix< T > H = identity_matrix< typename vector< T >::value_type >( A.size2() );
-
-	for( i = 0; i < r - 1; ++i ){
-		vector<T> col = matrix_column< matrix< T > > (A, i);
-		hs = make_householder_transform( i + 1, i, col );
-		householder_transform( i + 1, i, hs.first, hs.second, col, Q );
-		householder_transform( i + 1, i, hs.first, hs.second, col, A );
-		//A = prod( cQ, A );
-		//Q = prod( cQ, Q );
-
-		vector<T> row = matrix_row< matrix< T > > (A, i);
-		hs = make_householder_transform( i + 2, i + 1, row );
-		householder_transform( i + 2, i + 1, hs.first, hs.second, row, H );
-		A = trans( A );
-		householder_transform( i + 2, i + 1, hs.first, hs.second, row, A );
-		A = trans( A );
-		//A = prod( A, cH );
-		//H = prod( H, cH );
-	}
-	
-	// i = r - 1
-	vector<T> col = matrix_column< matrix< T > > (A, i);
-	hs = make_householder_transform( i + 1, i, col );
-	householder_transform( i + 1, i, hs.first, hs.second, col, Q );
-	householder_transform( i + 1, i, hs.first, hs.second, col, A );
-	
-	//A = prod( cQ, A );
-	//Q = prod( cQ, Q );
-
-	typename matrix< T >::value_type err;
-	err = std::abs( ( 3 * ( std::max( A.size1(), A.size2() ) - std::min( A.size1(), A.size2() ) ) + 40 ) * ( 2 * r - 1 ) * norm_frobenius( A ) * std::numeric_limits< typename matrix< T >::value_type >::epsilon() );
-	for( i = 0; i < A.size1(); ++i )
-		for( j = 0; j < A.size2(); j++ )
-			if( std::abs( A(i,j) ) < err )
-				A(i,j) = 0;
-
-	err = std::abs( ( 4 * A.size1() + 32 ) * ( 2 + r - 1 ) * norm_frobenius( Q ) * std::numeric_limits< typename matrix< T >::value_type >::epsilon() );
-	for( i = 0; i < Q.size1(); ++i )
-		for( j = 0; j < Q.size2(); j++ )
-			if( std::abs( Q(i,j) ) < err )
-				Q(i,j) = 0;
-
-	err = std::abs( ( 4 * A.size2() + 32 ) * ( 2 + r - 1 ) * norm_frobenius( H ) * std::numeric_limits< typename matrix< T >::value_type >::epsilon() );
-	for( i = 0; i < H.size1(); ++i )
-		for( j = 0; j < H.size2(); j++ )
-			if( std::abs( H(i,j) ) < err )
-				H(i,j) = 0;
-
-	H = trans( H );
-	return std::make_pair< matrix< T >, matrix< T > >(Q,H);
-}
-
 namespace {
 
 template<class T> typename T::size_type find_max( typename T::size_type s, typename T::size_type n, const T& v ){
@@ -102,6 +45,7 @@ template<class T> std::pair< matrix< T >, matrix< T > > singular_decomposition( 
 	assert( A.size2() > 1 );
 
 	std::pair< matrix< T >, matrix< T > > QH = transform_to_bidiagonal( A );
+	cancellate_bidiagonal( A, QH.first, QH.second );
 
 	std::pair< matrix< T >, matrix< T > > GW = qr_decomposition( A );
 
