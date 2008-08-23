@@ -7,7 +7,7 @@
 
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
-#include <boost/numeric/ublas/banded.hpp>
+#include <boost/numeric/ublas/matrix_proxy.hpp>
 
 using namespace boost::numeric::ublas;
 
@@ -27,6 +27,30 @@ template<class T> T calculate_o( T q2, T q1, T e2, T e1 ){
 
 };
 
+namespace {
+
+template<class T> void cancellate_leftright_givens_transform(
+	vector< T >& q,
+	vector< T >& e,
+	typename vector< T >::size_type s,
+	typename vector< T >::size_type n ){
+	typename vector< T >::size_type i;
+	typename vector< T >::value_type err = 6 * std::numeric_limits< typename vector< T >::value_type >::epsilon() * ( norm_2(q) + norm_2(e) );
+
+	assert( s >= 0 );
+	assert( s < n - 1 );
+	assert( n <= q.size() );
+	assert( n <= e.size() );
+
+	for( i = s; i < n; ++i ){
+		if( std::abs(q[i]) < err )
+			q[i] = 0;
+		if( std::abs(e[i]) < err )
+			e[i] = 0;
+	}
+};
+
+};
 
 template<class T> void qr_left_givens_transform(
 	vector< T >& q,
@@ -130,12 +154,13 @@ template<class T> void qr_decomposite_regular_cell(
 	for( i = n; i > s + 1; --i ){
 		while( std::abs( e[i-1] ) > norm_q * std::numeric_limits< typename matrix< T >::value_type >::epsilon() ){
 			l = qr_decomposition_iteration( q, e, s, i, G, W );
-			if( l > s ){ // NOTE: it isn't tested, but I hope it will be work ;)
+			if( l > s ){
 				qr_decomposite_regular_cell( q, e, s + l, i, G, W );
 				qr_decomposite_regular_cell( q, e, s, s + l, G, W );
 				return;
 			}
 		}
+		cancellate_leftright_givens_transform( q, e, s, n );
 		e[i-1] = 0;
 	}
 }
@@ -228,6 +253,7 @@ template<class T> void qr_decomposite_cell(
 		if( std::abs(q[ n - i - 2 + s ]) < std::numeric_limits< typename matrix< T >::value_type >::epsilon() ){
 	//		std::cout << "left_transofrm" << std::endl;
 			qr_left_givens_transform( q, e, n - i - 2 + s, n, G );
+			cancellate_leftright_givens_transform( q, e,  n - i - 2 + s, n );
 			qr_decomposite_cell( q, e, n - i - 2 + s + 1, n, G, W );
 			qr_decomposite_cell( q, e, s, n - i - 2 + s + 1, G, W );
 			return;
@@ -240,6 +266,7 @@ template<class T> void qr_decomposite_cell(
 	if( std::abs(q[n-1]) < std::numeric_limits< typename matrix< T >::value_type >::epsilon() ){
 	//	std::cout << "right_transofrm" << std::endl;
 		qr_right_givens_transform( q, e, s, n, W );
+		cancellate_leftright_givens_transform( q, e, s, n );
 		qr_decomposite_cell( q, e, n - 1, n, G, W );
 		qr_decomposite_cell( q, e, s, n - 1, G, W );
 		return;
@@ -250,35 +277,33 @@ template<class T> void qr_decomposite_cell(
 	qr_decomposite_regular_cell( q, e, s, n, G, W );
 }
 
-template<class T> std::pair< matrix< T >, matrix< T > > qr_decomposition( matrix< T >& B ){
-	typename matrix< T >::size_type i;
+template<class T> std::pair< matrix< typename T::value_type >,
+                             matrix< typename T::value_type > > qr_decomposition( T& B ) {
+	typedef T                      matrix_type;
+	typedef typename T::size_type  size_type;
+	typedef typename T::value_type value_type;
 
-	assert( B.size2() <= B.size1() );
-	assert( B.size2() > 1 );
+	size_type i;
+	size_type m = B.size1(),n = B.size2();
 
-	vector< typename matrix< T >::value_type > q( B.size2() );
-	vector< typename matrix< T >::value_type > e( B.size2() );
+	assert( n <= m );
+	assert( n > 1 );
 
-	matrix< typename matrix< T >::value_type > G = identity_matrix< typename matrix< T >::value_type > ( B.size1() );
-	matrix< typename matrix< T >::value_type > W = identity_matrix< typename matrix< T >::value_type > ( B.size2() );
+	vector< value_type > q( n );
+	vector< value_type > e( n );
 
-	/* unpack */
-	q[0] = B(0,0);
-	for( i = 1; i < q.size(); ++i ){
-		q[i] = B(i,i);
-		e[i] = B(i-1,i);
-	}
+	matrix< value_type > G = identity_matrix< value_type > ( m );
+	matrix< value_type > W = identity_matrix< value_type > ( n );
+
+	subrange( e, 1, n ) = matrix_vector_slice< matrix_type > ( B, slice(0, 1, n - 1), slice(1, 1, n - 1) );
+	q = matrix_vector_slice< matrix_type > ( B, slice(0, 1, n), slice(0, 1, n) );
 
 	qr_decomposite_cell( q, e, 0, q.size(), G, W );
 
-	/* pack */
-	B(0,0) = q[0];
-	for( i = 1; i < q.size(); ++i ){
-		B(i,i) = q[i];
-		B(i-1,i) = e[i];
-	}
+	matrix_vector_slice< matrix_type > ( B, slice(0, 1, n - 1), slice(1, 1, n - 1) ) = subrange( e, 1, n );
+	matrix_vector_slice< matrix_type > ( B, slice(0, 1, n), slice(0, 1, n) ) = q;
 
-	return std::make_pair< matrix< T >, matrix< T > >(G,W);
+	return std::make_pair< matrix< value_type >, matrix< value_type > >(G,W);
 }
 
 };

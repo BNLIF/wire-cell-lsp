@@ -39,7 +39,7 @@ template<class T> vector< T > least_squares( matrix< T >& A, vector< T >& b ){
 	
 	vector< typename matrix< T >::value_type > p( A.size2() );
 	for( i = 0; i < A.size2(); ++i ){
-		if( std::abs( A(i,i) ) > std::numeric_limits< typename matrix< T >::value_type >::epsilon() )
+		if( std::abs( A(i,i) ) != 0 )
 			p[i] = b[i] / A(i,i);
 		else
 			p[i] = 0;
