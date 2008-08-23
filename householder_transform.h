@@ -34,7 +34,7 @@ template< class T > std::pair< typename T::value_type,
 	if( l < m )
 		w = std::abs( std::max( v[p], *( std::max_element( v.begin() + l, v.end(), less_abs< value_type >() ) ), less_abs< value_type >() ) );
 	else
-		return std::make_pair< value_type, value_type >( 2 * v[p], std::abs( v[p] ) );
+		return std::make_pair< value_type, value_type >( 2 * v[p], ( v[p] < 0 ? 1 : -1 ) * std::abs( v[p] ) );
 
 	if( w != 0 ){
 		s += std::pow( v[p]/w, 2 );
@@ -66,7 +66,6 @@ template< class T, class U > void householder_transform( typename T::size_type l
 	assert( v.size() == A.size1() );
 
 	b = s * h;
-	//if( std::abs(b) <= std::abs(s) * std::numeric_limits< value_type >::epsilon() )
 	if( b == 0 )
 		return;
 
