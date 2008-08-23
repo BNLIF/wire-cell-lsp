@@ -284,7 +284,8 @@ template<class T> std::pair< matrix< typename T::value_type >,
 	typedef typename T::value_type value_type;
 
 	size_type i;
-	size_type m = B.size1(),n = B.size2();
+	const size_type m = B.size1();
+	const size_type n = B.size2();
 
 	assert( n <= m );
 	assert( n > 1 );

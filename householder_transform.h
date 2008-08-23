@@ -1,6 +1,8 @@
 #ifndef _householder_transform_h
 #define _householder_transform_h
 
+#include "utils.h"
+
 #include <limits>
 
 #include <boost/numeric/ublas/vector.hpp>
@@ -10,26 +12,33 @@ using namespace boost::numeric::ublas;
 
 namespace lsp{
 
-template< class T > std::pair< typename T::value_type, typename T::value_type > make_householder_transform(
+template< class T > std::pair< typename T::value_type,
+                               typename T::value_type > make_householder_transform(
 	typename T::size_type l,
 	typename T::size_type p,
 	const T& v ){
-	typename T::size_type i;
+	typedef T                      vector_type;
+	typedef typename T::size_type  size_type;
+	typedef typename T::value_type value_type;
+
+	size_type i;
+	const size_type m = v.size();
 
 	assert( p < l );
 	assert( p >= 0 );
-	assert( p < v.size() );
+	assert( p < m );
 
-	typename T::value_type w( v[p] ),s( 0 ),h( 0 );
+	value_type s = 0, h = 0;
+	value_type w;
 
-	for( i = l; i < v.size(); i++ ){
-		if( std::abs( v[i] ) > std::abs( w ) )
-			w = v[i];
-	}
+	if( l < m )
+		w = std::abs( std::max( v[p], *( std::max_element( v.begin() + l, v.end(), less_abs< value_type >() ) ), less_abs< value_type >() ) );
+	else
+		return std::make_pair< value_type, value_type >( 2 * v[p], std::abs( v[p] ) );
 
-	if( std::abs( w ) > 0 ){
+	if( w != 0 ){
 		s += std::pow( v[p]/w, 2 );
-		for( i = l; i < v.size(); i++ )
+		for( i = l; i < m; ++i )
 			s += std::pow( v[i]/w, 2 );
 		s = ( v[p] < 0 ? 1 : -1 ) * w * std::pow( s, 0.5 );
 	} else {
@@ -37,33 +46,28 @@ template< class T > std::pair< typename T::value_type, typename T::value_type > 
 	}
 
 	h = v[p] - s;
-	if( std::abs(h) <= std::abs(s) * std::numeric_limits< typename T::value_type >::epsilon() ){
-		h = 0;
-		s = v[p];
-	}
 
-	return std::make_pair< typename T::value_type, typename T::value_type >(h, s);
+	return std::make_pair< value_type, value_type >(h, s);
 }
 
-template< class T, class U > void householder_transform(
-	typename T::size_type l,
-	typename T::size_type p,
-	typename T::value_type h,
-	typename T::value_type s,
-	const T& v,
-	U& A ){
-	typename T::size_type i,j;
-	typename T::value_type b;
+template< class T, class U > void householder_transform( typename T::size_type l, typename T::size_type p, typename T::value_type h, typename T::value_type s, const T& v, U& A ){
+	typedef U                      matrix_type;
+	typedef T                      vector_type;
+	typedef typename T::size_type  size_type;
+	typedef typename T::value_type value_type;
+
+	size_type i,j;
+	value_type b;
+	const size_type m = A.size1(), n = A.size2();
 
 	assert( p < l );
 	assert( p >= 0 );
+	assert( p < m );
 	assert( v.size() == A.size1() );
-	assert( p < A.size1() );
-
-	typename U::size_type m = A.size1(), n = A.size2();
 
 	b = s * h;
-	if( std::abs(b) <= std::abs(s) * std::numeric_limits< typename T::value_type >::epsilon() )
+	//if( std::abs(b) <= std::abs(s) * std::numeric_limits< value_type >::epsilon() )
+	if( b == 0 )
 		return;
 
 	for( j = 0; j < n; ++j ){
