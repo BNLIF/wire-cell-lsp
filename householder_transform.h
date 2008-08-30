@@ -1,8 +1,27 @@
-#ifndef _householder_transform_h
-#define _householder_transform_h
+/*
+    $Id$
+    Copyright (C) 2008  Matwey V. Kornilov <matwey.kornilov@gmail.com>
 
-#include "utils.h"
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+#ifndef _HOUSEHOLDER_TRANSFORM_H
+#define _HOUSEHOLDER_TRANSFORM_H
+
+#include <lsp/utils.h>
+
+#include <algorithm>
 #include <limits>
 
 #include <boost/numeric/ublas/vector.hpp>
@@ -11,6 +30,36 @@
 using namespace boost::numeric::ublas;
 
 namespace lsp{
+
+template< class V > class chouseholder_transform {
+private:
+	typedef chouseholder_transform< V > self_type;
+public:
+	typedef V                      vector_type;
+	typedef typename V::size_type  size_type;
+	typedef typename V::value_type value_type;
+private:
+	size_type  m_l;
+	size_type  m_p;
+	value_type m_s;
+	value_type m_h;
+	const V&   m_v;
+public:
+	chouseholder_transform( size_type l, size_type p, const V& v ):
+		m_l( l ), m_p( p ), m_v( v ) {
+
+	}
+	
+	template< class W > void operator() ( vector_expression< W >& w ) const {
+		
+	}
+	template< class W > void operator() ( matrix_expression< W >& w ) const {
+		
+	}
+
+	inline value_type s() const { return m_s; }
+	inline value_type h() const { return m_h; }
+};
 
 template< class T > std::pair< typename T::value_type,
                                typename T::value_type > make_householder_transform(
@@ -34,7 +83,7 @@ template< class T > std::pair< typename T::value_type,
 	if( l < m )
 		w = std::abs( std::max( v[p], *( std::max_element( v.begin() + l, v.end(), less_abs< value_type >() ) ), less_abs< value_type >() ) );
 	else
-		return std::make_pair< value_type, value_type >( 2 * v[p], ( v[p] < 0 ? 1 : -1 ) * std::abs( v[p] ) );
+		return std::make_pair< value_type, value_type >( 2 * v[p], -v[p] );
 
 	if( w != 0 ){
 		s += std::pow( v[p]/w, 2 );
@@ -148,4 +197,4 @@ template<class T> std::pair< matrix< T >, matrix< T > > transform_to_bidiagonal(
 
 };
 
-#endif // _householder_transform_h
+#endif // _HOUSEHOLDER_TRANSFORM_H
