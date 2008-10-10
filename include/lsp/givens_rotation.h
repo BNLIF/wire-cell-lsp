@@ -1,3 +1,21 @@
+/*
+    $Id$
+    Copyright (C) 2008  Matwey V. Kornilov <matwey.kornilov@gmail.com>
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #ifndef _GIVENS_ROTATION_H
 #define _GIVENS_ROTATION_H
 
@@ -58,20 +76,21 @@ public:
  *  y
  *  \end{array}\right) \f]
  */
-	givens_rotation( const value_type x, const value_type y ) {
+	givens_rotation( value_type x, value_type y ) {
 		value_type w,q;
 
 		if( std::abs( x ) <= std::abs( y ) ) {
 			if( y == 0 ) {
-				m_c = 1; m_s = 0;
+				m_c = value_type( 1 );
+				m_s = value_type( 0 );
 			} else {
 				w = x / y;
 				q = std::sqrt( value_type( 1 ) + w*w );
-				s = value_type( 1 ) / q;
+				m_s = value_type( 1 ) / q;
 				if( y < 0 )
 					m_s = -m_s;
 				m_c = w * m_s;
-				m_r = y * q;
+				m_r = std::abs( y * q );
 			}
 		} else {
 			w = y / x;
@@ -80,10 +99,11 @@ public:
 			if( x < 0 )
 				m_c = -m_c;
 			m_s = w * m_c;
-			m_r = x * q;
+			m_r = std::abs( x * q );
 		}
 
 	}
+
 /**
  *  @brief Transformation operaton
  *  @param x - first coordinate of vector
@@ -103,7 +123,7 @@ public:
  *  - s x + c y
  *  \end{array}\right)
  *  \f] and stores it in the x and y accordingly.
- * 
+ *
  *  Matrix operations, like
  *  \f$ R A \quad \mbox{and} \quad A R \quad \mbox{where} \quad R \quad \mbox{is transformation matrix}\f$
  *  may be also computed if we represent the matrix as vector of vector-row or
@@ -111,8 +131,8 @@ public:
  *  but vector values.
  */
 	template<class U> void operator() ( U& x, U& y ) const {
-		U w ( m_c * x + m_s * y );
-		y = - m_s * x + m_c * y;
+		U w ( x * m_c + y * m_s );
+		y = x * ( -m_s ) + y * m_c;
 		x = w;
 	}
 
@@ -124,7 +144,6 @@ public:
  *  @return \f$ s \f$ value described above
  */
 	inline const value_type s() const { return m_s; }
-	
 /**
  *  @return \f$ r \equiv \sqrt{ x ^ 2 + y ^ 2} \f$ value described above
  */
@@ -134,59 +153,6 @@ public:
  */
 	inline const value_type z() const { return value_type(0); }
 };
-
-template< class T > std::pair< T, T > make_givens_rotation( T x, T y ){
-	T w,q,c,s;
-
-	if( std::abs( x ) <= std::abs( y ) ) {
-		if( y == 0 ) {
-			c = 1; s = 0;
-		} else {
-			w = x / y;
-			q = std::pow( 1 + std::pow( w, 2 ), 0.5 );
-			s = 1.0 / q;
-			if( y < 0 )
-				s = -s;
-			c = w*s;
-		}
-	} else {
-		w = y / x;
-		q = std::pow( 1 + std::pow( w, 2 ), 0.5 );
-		c = 1.0 / q;
-		if( x < 0 )
-			c = -c;
-		s = w*c;
-	}
-
-	return std::make_pair< T, T >(c, s);
-}
-
-template< class T > void givens_rotation( const T c, const T s, T& x, T& y ){
-	T w = c * x + s * y;
-	y = - s * x + c * y;
-	x = w;
-};
-
-template< class T > matrix< T > make_givens_rotation(
-	typename vector< T >::size_type i,
-	typename vector< T >::size_type k,
-	const vector< T >& v ){
-	
-	assert( i != k );
-	assert( i < v.size() );
-	assert( k < v.size() );
-
-	std::pair< typename vector< T >::value_type,
-	           typename vector< T >::value_type > p = make_givens_rotation( v[i], v[k] );
-	
-	matrix< T > G = identity_matrix< typename vector< T >::value_type >( v.size() );
-
-	G(i,i) = G(k,k) = p.first;
-	G(i,k) = p.second;
-	G(k,i) = -p.second;
-
-	return G;
-}
 
 };
 
