@@ -23,12 +23,21 @@
 #include <functional>
 
 namespace lsp {
-
+/**
+ *  @class less_abs
+ *  @brief comparsion of absoulte value
+ *
+ */
 template<class T> class less_abs:
 	public std::binary_function<T, T, bool> {
 private:
 	std::less< T > m_less;
 public:
+/**
+ *  @param x
+ *  @param y
+ *  @return true if \f$ |x| < |y| \f$, false otherwise
+ */
 	bool operator() (T x, T y) const {
 		return m_less( std::abs(x), std::abs(y) );
 	}
