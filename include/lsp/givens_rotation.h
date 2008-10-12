@@ -23,6 +23,7 @@
 
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
+#include <boost/numeric/ublas/detail/temporary.hpp>
 
 using namespace boost::numeric::ublas;
 
@@ -132,6 +133,16 @@ public:
  */
 	template<class U> void operator() ( U& x, U& y ) const {
 		U w ( x * m_c + y * m_s );
+		y = x * ( -m_s ) + y * m_c;
+		x = w;
+	}
+	template<class M> void operator() ( matrix_row< M > x, matrix_row< M > y ) const {
+		typename vector_temporary_traits< matrix_row< M > >::type w ( x * m_c + y * m_s );
+		y = x * ( -m_s ) + y * m_c;
+		x = w;
+	}
+	template<class M> void operator() ( matrix_column< M > x, matrix_column< M > y ) const {
+		typename vector_temporary_traits< matrix_column< M > >::type w ( x * m_c + y * m_s );
 		y = x * ( -m_s ) + y * m_c;
 		x = w;
 	}

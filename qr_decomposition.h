@@ -1,7 +1,7 @@
 #ifndef _qr_decomposition_h
 #define _qr_decomposition_h
 
-#include "givens_rotation.h"
+#include <lsp/givens_rotation.h>
 
 #include <limits>
 
@@ -68,24 +68,22 @@ template<class T> void qr_left_givens_transform(
 	assert( n <= e.size() );
 	assert( n <= G.size1() );
 
-	std::pair< typename matrix< T >::value_type,
-	           typename matrix< T >::value_type > p;
+	//std::pair< typename matrix< T >::value_type,
+	//           typename matrix< T >::value_type > p;
 
 	z = e[s+1];
 	e[s+1] = 0;
 
 	for( i = s + 1; i < n ; ++i ) {
 
-		p = make_givens_rotation( q[i], z );
-		q[i] = std::pow( std::pow( q[i], 2 ) + std::pow( z, 2 ) , 0.5 );
-		z = 0;
+		givens_rotation< typename matrix< T >::value_type > gr( q[i], z );
+		q[i] = gr.r();
+		z    = gr.z();
 
-		
-		for( j = 0; j < G.size2(); ++j )
-			givens_rotation( p.first, p.second, G(i,j), G(s,j) );	
+		gr( row(G, i), row(G, s) );	
 		if( i == n - 1 )
 			break;
-		givens_rotation( p.first, p.second, e[i+1], z );
+		gr( e[i+1], z );
 		// NOTE: в этом месте если z == 0 можно закончить алгоритим,
 		//       т.к. нет дальнейшей необходимости во вращениях
 		//       ||db|| < 6 * epsilon() * ||a||
@@ -109,23 +107,22 @@ template<class T> void qr_right_givens_transform(
 	assert( n <= e.size() );
 	assert( n <= W.size2() );
 
-	std::pair< typename matrix< T >::value_type,
-	           typename matrix< T >::value_type > p;
+	//std::pair< typename matrix< T >::value_type,
+	//           typename matrix< T >::value_type > p;
 
 	z = e[n-1];
 	e[n-1] = 0;
 
 	for( i = n - 2; i >= s; --i ) { // NOTE: i >= s is eq true because i,s is unsigned values.
 
-		p = make_givens_rotation( q[i], z );
-		q[i] = std::pow( std::pow( q[i], 2 ) + std::pow( z, 2 ) , 0.5 );
-		z = 0;
+		givens_rotation< typename matrix< T >::value_type > gr( q[i], z );
+		q[i] = gr.r();
+		z    = gr.z();
 
-		for( j = 0; j < W.size1(); ++j )
-			givens_rotation( p.first, p.second, W(j,i), W(j,n-1) );
+		gr( column( W, i ), column( W, n-1 ) );
 		if( i == s )
 			break;
-		givens_rotation( p.first, p.second, e[i], z );
+		gr( e[i], z );
 	}
 }
 
@@ -192,33 +189,34 @@ template<class T> typename matrix< T >::size_type qr_decomposition_iteration(
 	e[s + 0] = q[s + 0] - o/q[s + 0];
 	z = e[s + 1];
 
-	std::pair< typename matrix< T >::value_type,
-	           typename matrix< T >::value_type > p;
+	//std::pair< typename matrix< T >::value_type,
+	//           typename matrix< T >::value_type > p;
 
 	for( i = s + 1; i < n; ++i ){
-
-		p = make_givens_rotation( e[i-1], z );
-		e[i-1] = std::pow( std::pow( e[i-1], 2 ) + std::pow( z, 2 ) , 0.5 );
+		{
+		givens_rotation< typename matrix< T >::value_type > gr( e[i-1], z );
+		e[i-1] = gr.r();
 	
-		givens_rotation( p.first, p.second, q[i-1], e[i] );
-		for( j = 0; j < W.size1(); ++j )
-			givens_rotation( p.first, p.second, W(j,i-1), W(j,i) );
+		gr( q[i-1], e[i] );
+		gr( column(W,i-1), column(W,i) );
 
-		z = p.second * q[i];
-		q[i] = p.first * q[i];
+		z = gr.s() * q[i];
+		q[i] = gr.c() * q[i];
+		}
 
-		p = make_givens_rotation( q[i-1], z );
-		q[i-1] = std::pow( std::pow( q[i-1], 2 ) + std::pow( z, 2 ) , 0.5 );
+		{
+		givens_rotation< typename matrix< T >::value_type > gr( q[i-1], z );
+		q[i-1] = gr.r();
 	
-		givens_rotation( p.first, p.second, e[i], q[i] );
-		for( j = 0; j < G.size2(); ++j )
-			givens_rotation( p.first, p.second, G(i-1,j), G(i,j) );
+		gr( e[i], q[i] );
+		gr( row(G,i-1), row(G,i) );
 
 		if( i == n - 1 )
 			break;
 
-		z = p.second * e[i+1];
-		e[i+1] = p.first * e[i+1];
+		z = gr.s() * e[i+1];
+		e[i+1] = gr.c() * e[i+1];
+		}
 
 	}
 
