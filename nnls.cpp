@@ -13,8 +13,10 @@ int main(){
 	assert( m > 1 );
 	assert( n > 1 );
 
-	matrix< double > A( m, n ),A0;
-	vector< double > b( m),b0;
+	matrix< double > A0,A( m, n );
+	vector< double > b0,b( m );
+	vector< double > w( m );
+	double am;
 
 	try{
 
@@ -22,24 +24,36 @@ int main(){
 
 	while( true ){
 
+	std::cin >> am;
+
 	for( i = 0; i < m; i++ ){
 	for( j = 0; j < n; j++ ){
 		std::cin >> A(i,j);
 	}
 		std::cin >> b(i);
+		std::cin >> w(i);
 	}
 
-	//A0 = A;
-	//b0 = b;
-
 	//std::cout << std::endl << A << std::endl;
+	
+	for( i = 0; i < m; i++ )
+		matrix_row< matrix<double> > (A, i) = w(i) * matrix_row< matrix<double> > (A, i);
+	b = element_prod( b, w );
+
+	A0 = A;
+	b0 = b;
 
 	vector< double > x = lsp::nnls( A, b );
+
+	vector< double > r = prod( A0, x ) - b0;
+
+	x = x / am;
 
 	//std::cout << std::endl;
 	for( j = 0; j < n; j++ ){
 		std::cout << x[j] << "\t";
 	}
+	std::cout << inner_prod( r, r );
 	std::cout << std::endl;
 	}
 	//std::cout << "||Ax-b|| " << norm_2( prod( A0, x ) - b0 ) << std::endl;

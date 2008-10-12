@@ -2,8 +2,8 @@
 #define _singular_decomposition_h
 
 #include "qr_decomposition.h"
-#include "givens_rotation.h"
-#include "householder_transform.h"
+#include <lsp/givens_rotation.h>
+#include <lsp/householder_transform.h>
 
 #include <limits>
 
@@ -47,7 +47,10 @@ template<class T> std::pair< matrix< T >, matrix< T > > singular_decomposition( 
 	std::pair< matrix< T >, matrix< T > > QH = transform_to_bidiagonal( A );
 	cancellate_bidiagonal( A, QH.first, QH.second );
 
+
+
 	std::pair< matrix< T >, matrix< T > > GW = qr_decomposition( A );
+
 
 	QH.first  = prod( GW.first, QH.first );
 	QH.second = prod( QH.second, GW.second );

@@ -44,6 +44,12 @@ int main(){
 	std::cout << A << std::endl;
 	std::cout << b << std::endl;
 
+	for( matrix< double >::const_iterator1 it = A.begin1(); it != A.end1(); ++it ){
+		//for( matrix< double >::const_iterator2 it2 = it.begin(); it2 != it.end(); ++it2 ){
+			std::cerr << *(it.begin()+1) << std::endl;
+		//}
+	}
+
 	return 0;
 }
 #endif
