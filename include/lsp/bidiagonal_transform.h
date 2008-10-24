@@ -16,8 +16,8 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _BIDIOGONAL_TRANSFORM_H
-#define _BIDIOGONAL_TRANSFORM_H
+#ifndef _BIDIAGONAL_TRANSFORM_H
+#define _BIDIAGONAL_TRANSFORM_H
 
 #include <lsp/householder_transform.h>
 
@@ -26,7 +26,7 @@
 
 namespace lsp{
 
-template<class T> struct householder_bidiogonal_transform_traits {
+template<class T> struct householder_bidiagonal_transform_traits {
 	typedef T value_type;
 
 	template<class M> static value_type left_error( const M& Q ){
@@ -76,17 +76,17 @@ template<class T> struct householder_bidiogonal_transform_traits {
 	}
 };
 
-template<class Traits> struct bidiogonal_error:
+template<class Traits> struct bidiagonal_error:
 	public Traits {
 	typedef typename Traits::value_type value_type;
 };
 
 template<class M,class MQ,class MH>
 template<class Traits>
-void bidiogonal_transform( M& A, MQ& Q, MH& H ){
+void bidiagonal_transform( M& A, MQ& Q, MH& H ){
 	Traits::transform( A, Q, H );
 }
 
 };
 
-#endif // _BIDIOGONAL_TRANSFORM_H
+#endif // _BIDIAGONAL_TRANSFORM_H
