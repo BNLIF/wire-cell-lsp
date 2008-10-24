@@ -128,6 +128,14 @@ public:
 			operator()( row( w, i ) );
 	}
 
+	operator vector_type() const {
+		vector_type u(m_v);
+		u(m_p) = m_s;
+		for( size_type i = m_l; i < u.size(); ++i )
+			u(i) = 0;
+		return u;
+	}
+
 /**
  *  @return \f$ s \f$ value described above
  */
@@ -184,15 +192,18 @@ template<class T> std::pair< matrix< T >, matrix< T > > transform_to_bidiagonal(
 		householder_transform< value_type > h1( i+1, i, column(A,i) );
 		h1( Q, row_major_tag() );
 		h1( A, row_major_tag() );
+		column(A,i) = vector< value_type >(h1);
 
 		householder_transform< value_type > h2( i+2, i+1, row(A,i) );
 		h2( H, column_major_tag() );
 		h2( A, column_major_tag() );
+		row(A,i) = vector< value_type >(h2);
 	}
 	
 	householder_transform< value_type > h1( i+1, i, column(A,i) );
 	h1( Q, row_major_tag() );
 	h1( A, row_major_tag() );
+	column(A,i) = vector< value_type >(h1);
 
 	return std::make_pair< matrix< T >, matrix< T > >(Q,H);
 }
