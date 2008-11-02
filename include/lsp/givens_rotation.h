@@ -146,15 +146,15 @@ public:
 	}
 
 /**
- *  @return \f$ c \f$ value described above
+ *  @return \f$ c \f$ value is described above
  */
 	inline const value_type c() const { return m_c; }
 /**
- *  @return \f$ s \f$ value described above
+ *  @return \f$ s \f$ value is described above
  */
 	inline const value_type s() const { return m_s; }
 /**
- *  @return \f$ r \equiv \sqrt{ x ^ 2 + y ^ 2} \f$ value described above
+ *  @return \f$ r \equiv \sqrt{ x ^ 2 + y ^ 2} \f$ value is described above
  */
 	inline const value_type r() const { return m_r; }
 /**

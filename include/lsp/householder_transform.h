@@ -32,8 +32,26 @@ using namespace boost::numeric::ublas;
 namespace lsp{
 
 /**
- *  @class householder_rotation
+ *  @class householder_transform
  *  @brief A functor for the Householder transformation
+ *
+ *  Housholder transformation is a transformation with three arguments: v, l, p.
+ *  It is defined as:
+ *  \f[
+ *  Qv = \left(\begin{array}{c}
+ *  v_1 \\
+ *  v_2 \\
+ *  \cdots \\
+ *  v_{p-1} \\
+ *  s \equiv -\sigma \left(v_p^2+\sum_{i=l}^m v_i^2\right)^{\frac{1}{2}} \\
+ *  v_{p+1} \\
+ *  \cdots \\
+ *  v_{l-1} \\
+ *  0 \\
+ *  \cdots \\
+ *  0
+ *  \end{array}\right) \equiv u
+ *  \f]
  *
  */
 template< class T > class householder_transform {
@@ -51,9 +69,9 @@ private:
 public:
 /**
  *  @brief An object constructor
- *  @param l - 
- *  @param p - 
- *  @param v -
+ *  @param l - number of nonzero coordinates of the result vector
+ *  @param p - index of coordinate to be altered
+ *  @param v - the initial vector
  * 
  */
 	template<class U> householder_transform( size_type l, size_type p, const U& v ):
@@ -91,6 +109,8 @@ public:
  *  @brief Transformation operaton
  *  @param w - matrix or vector
  *
+ *  It computes result of \f$ Qw \f$ or \f$ wQ \f$ and stores it in the w. Both
+ *  vector and matrix productions are available.
  */
 	template<class M> void operator()( matrix_row<M> v ) const {
 		operator()( v, vector_tag() );
@@ -128,6 +148,14 @@ public:
 			operator()( row( w, i ) );
 	}
 
+/**
+ *  @return \f$ u \f$ vector is described adove
+ * 
+ *  It may be useful for using in the expressions like
+ *  \code
+ *  column(A,i) = vector< value_type >(hleft);
+ *  \endcode
+ */
 	operator vector_type() const {
 		vector_type u(m_v);
 		u(m_p) = m_s;
@@ -137,11 +165,11 @@ public:
 	}
 
 /**
- *  @return \f$ s \f$ value described above
+ *  @return \f$ s \f$ value is described above
  */
 	inline const value_type s() const { return m_s; }
 /**
- *  @return \f$ h \f$ value described above
+ *  @return \f$ h = v_p - s \f$
  */
 	inline const value_type h() const { return m_h; }
 };
