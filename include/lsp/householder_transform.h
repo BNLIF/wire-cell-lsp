@@ -158,68 +158,6 @@ public:
 	inline const value_type h() const { return m_h; }
 };
 
-namespace {
-
-template<class T> void cancellate_bidiagonal( matrix< T >& A, matrix< T >& Q, matrix< T >& H ) {
-	typename matrix< T >::size_type i, j;
-	typename matrix< T >::size_type n = std::min(A.size1(),A.size2()), m = std::max(A.size1(),A.size2());
-
-	assert( Q.size1() == Q.size2() );
-	assert( H.size1() == H.size2() );
-	assert( A.size1() == Q.size1() );
-	assert( A.size2() == H.size2() );
-
-	typename matrix< T >::value_type err;
-	err = std::abs( ( 3 * ( m - n ) + 40 ) * ( 2 * n - 1 ) * norm_frobenius( A ) * std::numeric_limits< typename matrix< T >::value_type >::epsilon() );
-	for( i = 0; i < A.size1(); ++i )
-		for( j = 0; j < A.size2(); j++ )
-			if( std::abs( A(i,j) ) < err )
-				A(i,j) = 0;
-
-	err = std::abs( ( 4 * A.size1() + 32 ) * ( 2 + n - 1 ) * norm_frobenius( Q ) * std::numeric_limits< typename matrix< T >::value_type >::epsilon() );
-	for( i = 0; i < Q.size1(); ++i )
-		for( j = 0; j < Q.size2(); j++ )
-			if( std::abs( Q(i,j) ) < err )
-				Q(i,j) = 0;
-
-	err = std::abs( ( 4 * A.size2() + 32 ) * ( 2 + n - 1 ) * norm_frobenius( H ) * std::numeric_limits< typename matrix< T >::value_type >::epsilon() );
-	for( i = 0; i < H.size1(); ++i )
-		for( j = 0; j < H.size2(); j++ )
-			if( std::abs( H(i,j) ) < err )
-				H(i,j) = 0;
-
-}
-
-};
-
-template<class T> std::pair< matrix< T >, matrix< T > > transform_to_bidiagonal( matrix< T >& A ) {
-	typedef typename vector< T >::value_type value_type;
-	typename matrix< T >::size_type i,j;
-	typename matrix< T >::size_type r = std::min(A.size1(),A.size2());
-	std::pair< T, T > hs;
-	matrix< T > Q = identity_matrix< value_type >( A.size1() );
-	matrix< T > H = identity_matrix< value_type >( A.size2() );
-
-	for( i = 0; i < r - 1; ++i ){
-		householder_transform< vector< T > > h1( i+1, i, column(A,i) );
-		h1.apply( Q, row_major_tag() );
-		h1.apply( A, row_major_tag() );
-		//column(A,i) = vector< value_type >(h1);
-
-		householder_transform< vector< T > > h2( i+2, i+1, row(A,i) );
-		h2.apply( H, column_major_tag() );
-		h2.apply( A, column_major_tag() );
-		//row(A,i) = vector< value_type >(h2);
-	}
-	
-	householder_transform< vector< T > > h1( i+1, i, column(A,i) );
-	h1.apply( Q, row_major_tag() );
-	h1.apply( A, row_major_tag() );
-	//column(A,i) = vector< value_type >(h1);
-
-	return std::make_pair< matrix< T >, matrix< T > >(Q,H);
-}
-
 };
 
 #endif // _HOUSEHOLDER_TRANSFORM_H

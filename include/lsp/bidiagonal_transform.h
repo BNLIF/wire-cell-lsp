@@ -26,6 +26,24 @@
 
 namespace lsp{
 
+/**
+ *  @class bidiagonal_transform
+ *  @brief A functor for the transformation matrix into the bidiagonal form using Householder transformations.
+ *
+ *  Any matrix can be transformed into the bidiagonal form
+ *  by the \f$ 2 \cdot n - 1 \f$ Householder transformations.
+ *
+ *  \f[
+ *  B = Q A H \quad \mbox{where} \quad B = \left| \begin{array}{ccccc}
+ *     q_1   & e_2   &       &       &       \\
+ *           & q_2   & e_3   &       &       \\
+ *           &       &\ddots &\ddots &       \\
+ *           &       &       &q_{n-1}& e_n   \\
+ *           &       &       &       & q_n   \\
+ *  \end{array} \right|,\quad A \quad \mbox{is initial matrix}
+ *  \f]
+ *
+ */
 template<class T> class bidiagonal_transform {
 public:
 	typedef T matrix_type;
@@ -37,15 +55,41 @@ private:
 	size_type    m_max;
 
 public:
+/**
+ *  @brief An object constructor
+ *  @param[in,out] matrix The reference to matrix object to be transformed
+ *
+ *  Actual transformation will be performed as soon as apply(M1& left, M2& right) will be called.
+ *
+ */
 	bidiagonal_transform( matrix_type& matrix ):
 		m_matrix( matrix ) {
 		m_min = std::min( matrix.size1(), matrix.size2() );
 		m_max = std::max( matrix.size1(), matrix.size2() );
 	}
 
+/**
+ *  @brief Transformation operaton
+ *  @param[out] left  The left matrix
+ *  @param[out] right The right matrix
+ *
+ *  The routine calculates and makes transformation.
+ *  Intrinsic assumption is that the all matrix are size-suitable, \f$ M_{left}\f$ and \f$ M_{right}\f$ are square.
+ * 
+ *  \f$ M_{left} := Q M_{left} \f$
+ *
+ *  \f$ M_{right} := M_{right} H \f$
+ *
+ *  \f$ M_{matrix} := Q M_{matrix} H \equiv B \f$
+ *
+ */
 	template<class M1, class M2> void apply( M1& left, M2& right ) const {
 		typedef vector< value_type > vector_type;
 		typedef householder_transform< vector_type > householder_transform_type;
+
+		assert( left.size1()  == left.size2()  && left.size1()  == A.size1() );
+		assert( right.size1() == right.size2() && right.size1() == A.size2() );
+
 		size_type i;
 
 		for( i = 0; i < m_min - 1; ++i ){
@@ -63,16 +107,34 @@ public:
 		hleft.apply( m_matrix, row_major_tag() );
 	}
 
+/**
+ *  @brief Rounding error for the left matrix
+ *
+ *  \f$ \|Q\|_{F} \le \epsilon \|I\|_{F} \quad \mbox{where} \quad \epsilon \equiv \left| ( 4 m + 32 ) ( 2 \min\{m,n\} - 1 ) \epsilon_0 \right|, \quad I \quad \mbox{is identity matrix} \f$
+ *
+ */
 	value_type left_error() const {
-		return std::abs( ( 4 * m_matrix.size1() + 32 ) * ( 2 + m_min - 1 ) * std::numeric_limits< value_type >::epsilon() );
+		return std::abs( ( 4 * m_matrix.size1() + 32 ) * ( 2 * m_min - 1 ) * std::numeric_limits< value_type >::epsilon() );
 	}
 
+/**
+ *  @brief Rounding error for the right matrix
+ *
+ *  \f$ \|H\|_{F} \le \epsilon \|I\|_{F} \quad \mbox{where} \quad \epsilon \equiv \left| ( 4 n + 32 ) ( 2 \min\{m,n\} - 1 ) \epsilon_0 \right|, \quad I \quad \mbox{is identity matrix} \f$
+ *
+ */
 	value_type right_error() const {
-		return std::abs( ( 4 * m_matrix.size2() + 32 ) * ( 2 + m_min - 1 ) * std::numeric_limits< value_type >::epsilon() );
+		return std::abs( ( 4 * m_matrix.size2() + 32 ) * ( 2 * m_min - 1 ) * std::numeric_limits< value_type >::epsilon() );
 	}
 	
+/**
+ *  @brief Rounding error for the result matrix
+ *
+ *  \f$ \|B\|_{F} \le \epsilon \|A\|_{F} \quad \mbox{where} \quad \epsilon \equiv \left| ( 3 (\max\{m,n\}-\min\{m,n\}) + 40 ) ( 2 \min\{m,n\} - 1 ) \epsilon_0 \right| \f$
+ *
+ */
 	value_type matrix_error() const {
-		return std::abs( ( 3 * ( m_max - m_min ) + 40 ) * ( 2 * m_min - 1 ) * std::numeric_limits< value_type >::epsilon() );
+		return std::abs( ( 6 * m_matrix.size1() - 3 * m_min + 40 ) * ( 2 * m_min - 1 ) * std::numeric_limits< value_type >::epsilon() );
 	}
 };
 
