@@ -34,9 +34,9 @@ int main(){
 //	matrix_column< matrix<double> > a2(A, 0);
 //	std::cout << inner_prod( column(A,1), a2) <<std::endl;
 //	column(A,1).swap( a2 );
-	gr( column(A,1), column(A,2) );
-	gr( row(A,0), row(A,1) );
-	gr( v1, v2 );
+	gr.apply( column(A,1), column(A,2) );
+	gr.apply( row(A,0), row(A,1) );
+	gr.apply( v1, v2 );
 	
 	std::cout << A << std::endl;
 	std::cout << v1 << std::endl;

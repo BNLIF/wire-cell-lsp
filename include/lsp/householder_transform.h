@@ -56,26 +56,26 @@ namespace lsp{
  */
 template< class T > class householder_transform {
 public:
-	typedef T                               value_type;
-	typedef vector< T >                     vector_type;
-	typedef typename vector_type::size_type size_type;
+	typedef T                                vector_type;
+	typedef typename vector_type::value_type value_type;
+	typedef typename vector_type::size_type  size_type;
 
 private:
 	size_type  m_l;
 	size_type  m_p;
 	value_type m_s;
 	value_type m_h;
-	const vector_type m_v;
+	vector_type m_v;
 public:
 /**
  *  @brief An object constructor
- *  @param l - number of nonzero coordinates of the result vector
- *  @param p - index of coordinate to be altered
- *  @param v - the initial vector
+ *  @param[in]     l The number of nonzero coordinates of the result vector
+ *  @param[in]     p The index of coordinate to be altered
+ *  @param[in,out] v The initial vector.
  * 
  */
-	template<class U> householder_transform( size_type l, size_type p, const U& v ):
-		m_s( 0 ), m_l( l ), m_p( p ), m_v( v ) {
+	householder_transform( size_type l, size_type p, vector_type v ):
+		m_s( 0 ), m_l( l ), m_p( p ), m_v(v) {
 		size_type i;
 		const size_type m = v.size();
 
@@ -107,21 +107,21 @@ public:
 
 /**
  *  @brief Transformation operaton
- *  @param w - matrix or vector
+ *  @param[in,out] w Matrix or vector to be transformed
  *
  *  It computes result of \f$ Qw \f$ or \f$ wQ \f$ and stores it in the w. Both
  *  vector and matrix productions are available.
  */
-	template<class M> void operator()( matrix_row<M> v ) const {
-		operator()( v, vector_tag() );
+	template<class M> void apply ( matrix_row<M> v ) const {
+		apply( v, vector_tag() );
 	}
-	template<class M> void operator()( matrix_column<M> v ) const {
-		operator()( v, vector_tag() );
+	template<class M> void apply ( matrix_column<M> v ) const {
+		apply( v, vector_tag() );
 	}
-	template<class U> void operator()( U& v ) const {
-		operator()( v, vector_tag() );
+	template<class U> void apply ( U& v ) const {
+		apply( v, vector_tag() );
 	}
-	template<class U> void operator()( U v, vector_tag ) const {
+	template<class U> void apply ( U v, vector_tag ) const {
 		typedef U vector2_type;
 
 		assert( m_v.size() == v.size() );
@@ -139,29 +139,13 @@ public:
 		for( size_type i = m_l; i < v.size(); i++ )
 			v(i) += s * m_v(i);
 	}
-	template<class U> void operator()( U& w, row_major_tag ) const {
+	template<class U> void apply ( U& w, row_major_tag ) const {
 		for( size_type i = 0; i < w.size2(); ++i )
-			operator()( column( w, i ) );
+			apply( column( w, i ) );
 	}
-	template<class U> void operator()( U& w, column_major_tag ) const {
+	template<class U> void apply ( U& w, column_major_tag ) const {
 		for( size_type i = 0; i < w.size1(); ++i )
-			operator()( row( w, i ) );
-	}
-
-/**
- *  @return \f$ u \f$ vector is described adove
- * 
- *  It may be useful for using in the expressions like
- *  \code
- *  column(A,i) = vector< value_type >(hleft);
- *  \endcode
- */
-	operator vector_type() const {
-		vector_type u(m_v);
-		u(m_p) = m_s;
-		for( size_type i = m_l; i < u.size(); ++i )
-			u(i) = 0;
-		return u;
+			apply( row( w, i ) );
 	}
 
 /**
@@ -217,21 +201,21 @@ template<class T> std::pair< matrix< T >, matrix< T > > transform_to_bidiagonal(
 	matrix< T > H = identity_matrix< value_type >( A.size2() );
 
 	for( i = 0; i < r - 1; ++i ){
-		householder_transform< value_type > h1( i+1, i, column(A,i) );
-		h1( Q, row_major_tag() );
-		h1( A, row_major_tag() );
-		column(A,i) = vector< value_type >(h1);
+		householder_transform< vector< T > > h1( i+1, i, column(A,i) );
+		h1.apply( Q, row_major_tag() );
+		h1.apply( A, row_major_tag() );
+		//column(A,i) = vector< value_type >(h1);
 
-		householder_transform< value_type > h2( i+2, i+1, row(A,i) );
-		h2( H, column_major_tag() );
-		h2( A, column_major_tag() );
-		row(A,i) = vector< value_type >(h2);
+		householder_transform< vector< T > > h2( i+2, i+1, row(A,i) );
+		h2.apply( H, column_major_tag() );
+		h2.apply( A, column_major_tag() );
+		//row(A,i) = vector< value_type >(h2);
 	}
 	
-	householder_transform< value_type > h1( i+1, i, column(A,i) );
-	h1( Q, row_major_tag() );
-	h1( A, row_major_tag() );
-	column(A,i) = vector< value_type >(h1);
+	householder_transform< vector< T > > h1( i+1, i, column(A,i) );
+	h1.apply( Q, row_major_tag() );
+	h1.apply( A, row_major_tag() );
+	//column(A,i) = vector< value_type >(h1);
 
 	return std::make_pair< matrix< T >, matrix< T > >(Q,H);
 }

@@ -55,12 +55,11 @@ public:
 
 private:
 	value_type m_c, m_s;
-	value_type m_r;
 public:
 /**
  *  @brief An object constructor
- *  @param x - first vector coordinate
- *  @param y - second vector cooridnate
+ *  @param[in,out] x The first vector coordinate. After construction \f$ x = r \equiv \sqrt{x^2+y^2} \f$
+ *  @param[in,out] y The second vector cooridnate. After construction \f$ y = 0 \f$
  * 
  *  It computes \f$ c, s \f$ such that \f[
  *  \left|\begin{array}{cc}
@@ -74,8 +73,9 @@ public:
  *  x \\
  *  y
  *  \end{array}\right) \f]
+ *
  */
-	givens_rotation( value_type x, value_type y ) {
+	givens_rotation( value_type& x, value_type& y ) {
 		value_type w,q;
 
 		if( std::abs( x ) <= std::abs( y ) ) {
@@ -89,7 +89,8 @@ public:
 				if( y < 0 )
 					m_s = -m_s;
 				m_c = w * m_s;
-				m_r = std::abs( y * q );
+				x = std::abs( y * q );
+				y = 0;
 			}
 		} else {
 			w = y / x;
@@ -98,15 +99,16 @@ public:
 			if( x < 0 )
 				m_c = -m_c;
 			m_s = w * m_c;
-			m_r = std::abs( x * q );
+			x = std::abs( x * q );
+			y = 0;
 		}
 
 	}
 
 /**
  *  @brief Transformation operaton
- *  @param x - first coordinate of vector
- *  @param y - second coordinate of vector
+ *  @param[in,out] x The first coordinate of vector
+ *  @param[in,out] y The second coordinate of vector
  *
  *  It computes \f[
  *  \left|\begin{array}{cc}
@@ -129,17 +131,17 @@ public:
  *  vector-column accordingly. Put it in other way we may assume that \f$ x \f$ and \f$ y \f$ are not scalar
  *  but vector values.
  */
-	template<class U> void operator() ( U& x, U& y ) const {
+	template<class U> void apply ( U& x, U& y ) const {
 		U w ( x * m_c + y * m_s );
 		y = x * ( -m_s ) + y * m_c;
 		x = w;
 	}
-	template<class M> void operator() ( matrix_row< M > x, matrix_row< M > y ) const {
+	template<class M> void apply ( matrix_row< M > x, matrix_row< M > y ) const {
 		typename vector_temporary_traits< matrix_row< M > >::type w ( x * m_c + y * m_s );
 		y = x * ( -m_s ) + y * m_c;
 		x = w;
 	}
-	template<class M> void operator() ( matrix_column< M > x, matrix_column< M > y ) const {
+	template<class M> void apply ( matrix_column< M > x, matrix_column< M > y ) const {
 		typename vector_temporary_traits< matrix_column< M > >::type w ( x * m_c + y * m_s );
 		y = x * ( -m_s ) + y * m_c;
 		x = w;
@@ -153,14 +155,6 @@ public:
  *  @return \f$ s \f$ value is described above
  */
 	inline const value_type s() const { return m_s; }
-/**
- *  @return \f$ r \equiv \sqrt{ x ^ 2 + y ^ 2} \f$ value is described above
- */
-	inline const value_type r() const { return m_r; }
-/**
- *  @return \f$ 0 \f$ ( second coordinate of transformed vector )
- */
-	inline const value_type z() const { return value_type(0); }
 };
 
 };

@@ -77,13 +77,13 @@ template<class T> void qr_left_givens_transform(
 	for( i = s + 1; i < n ; ++i ) {
 
 		givens_rotation< typename matrix< T >::value_type > gr( q[i], z );
-		q[i] = gr.r();
-		z    = gr.z();
+		//q[i] = gr.r();
+		//z    = gr.z();
 
-		gr( row(G, i), row(G, s) );	
+		gr.apply( row(G, i), row(G, s) );	
 		if( i == n - 1 )
 			break;
-		gr( e[i+1], z );
+		gr.apply( e[i+1], z );
 		// NOTE: в этом месте если z == 0 можно закончить алгоритим,
 		//       т.к. нет дальнейшей необходимости во вращениях
 		//       ||db|| < 6 * epsilon() * ||a||
@@ -116,13 +116,13 @@ template<class T> void qr_right_givens_transform(
 	for( i = n - 2; i >= s; --i ) { // NOTE: i >= s is eq true because i,s is unsigned values.
 
 		givens_rotation< typename matrix< T >::value_type > gr( q[i], z );
-		q[i] = gr.r();
-		z    = gr.z();
+		//q[i] = gr.r();
+		//z    = gr.z();
 
-		gr( column( W, i ), column( W, n-1 ) );
+		gr.apply( column( W, i ), column( W, n-1 ) );
 		if( i == s )
 			break;
-		gr( e[i], z );
+		gr.apply( e[i], z );
 	}
 }
 
@@ -195,10 +195,10 @@ template<class T> typename matrix< T >::size_type qr_decomposition_iteration(
 	for( i = s + 1; i < n; ++i ){
 		{
 		givens_rotation< typename matrix< T >::value_type > gr( e[i-1], z );
-		e[i-1] = gr.r();
+		//e[i-1] = gr.r();
 	
-		gr( q[i-1], e[i] );
-		gr( column(W,i-1), column(W,i) );
+		gr.apply( q[i-1], e[i] );
+		gr.apply( column(W,i-1), column(W,i) );
 
 		z = gr.s() * q[i];
 		q[i] = gr.c() * q[i];
@@ -206,10 +206,10 @@ template<class T> typename matrix< T >::size_type qr_decomposition_iteration(
 
 		{
 		givens_rotation< typename matrix< T >::value_type > gr( q[i-1], z );
-		q[i-1] = gr.r();
+		//q[i-1] = gr.r();
 	
-		gr( e[i], q[i] );
-		gr( row(G,i-1), row(G,i) );
+		gr.apply( e[i], q[i] );
+		gr.apply( row(G,i-1), row(G,i) );
 
 		if( i == n - 1 )
 			break;

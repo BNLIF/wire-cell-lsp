@@ -26,66 +26,55 @@
 
 namespace lsp{
 
-template<class T> struct householder_bidiagonal_transform_traits {
-	typedef T value_type;
+template<class T> class bidiagonal_transform {
+public:
+	typedef T matrix_type;
+	typedef typename matrix_type::value_type value_type;
+	typedef typename matrix_type::size_type  size_type;
+private:
+	matrix_type& m_matrix;
+	size_type    m_min;
+	size_type    m_max;
 
-	template<class M> static value_type left_error( const M& Q ){
-		typedef typename M::value_type value_type;
-
-		return std::abs( ( 4 * A.size1() + 32 ) * ( 2 + n - 1 ) * norm_frobenius( Q ) * std::numeric_limits< value_type >::epsilon() );
+public:
+	bidiagonal_transform( matrix_type& matrix ):
+		m_matrix( matrix ) {
+		m_min = std::min( matrix.size1(), matrix.size2() );
+		m_max = std::max( matrix.size1(), matrix.size2() );
 	}
 
-	template<class M> static value_type right_error( const M& H ){
-		typedef typename M::value_type value_type;
-
-		return std::abs( ( 4 * A.size2() + 32 ) * ( 2 + n - 1 ) * norm_frobenius( H ) * std::numeric_limits< value_type >::epsilon() );
-	}
-	
-	template<class M> static value_type matrix_error( const M& A ){
-		typedef typename M::value_type value_type;
-		typedef typename M::size_type  size_type;
-
-		size_type n = std::min(A.size1(),A.size2());
-		size_type m = std::max(A.size1(),A.size2());
-
-		return std::abs( ( 3 * ( m - n ) + 40 ) * ( 2 * n - 1 ) * norm_frobenius( A ) * std::numeric_limits< value_type >::epsilon() );
-	}
-
-	template<class M,class MQ,class MH> static void transform( M& A, MQ& Q, MH& H ){
-		typedef typename M::size_type size_type;
-
+	template<class M1, class M2> void apply( M1& left, M2& right ) const {
+		typedef vector< value_type > vector_type;
+		typedef householder_transform< vector_type > householder_transform_type;
 		size_type i;
-		size_type r = std::min(A.size1(),A.size2());
 
-		for( i = 0; i < r - 1; ++i ){
-			householder_transform< value_type > hleft( i+1, i, column(A,i) );
-			hleft(Q, row_major_tag());
-			hleft(A, row_major_tag());
-			column(A,i) = vector< value_type >(hleft);
+		for( i = 0; i < m_min - 1; ++i ){
+			householder_transform_type hleft( i+1, i, column(m_matrix,i) );
+			hleft.apply( left, row_major_tag() );
+			hleft.apply( m_matrix, row_major_tag() );
 
-			householder_transform< value_type > hright( i+2, i+1, row(A,i) );
-			hright(H, column_major_tag());
-			hright(A, column_major_tag());
-			row(A,i) = vector< value_type >(hright);
+			householder_transform_type hright( i+2, i+1, row(m_matrix,i) );
+			hright.apply( right, column_major_tag() );
+			hright.apply( m_matrix, column_major_tag() );
 		}
 	
-		householder_transform< value_type > hleft( i+1, i, column(A,i) );
-		hleft(Q, row_major_tag());
-		hleft(A, row_major_tag());
-		column(A,i) = vector< value_type >(hleft);
+		householder_transform_type hleft( i+1, i, column(m_matrix,i) );
+		hleft.apply( left, row_major_tag() );
+		hleft.apply( m_matrix, row_major_tag() );
+	}
+
+	value_type left_error() const {
+		return std::abs( ( 4 * m_matrix.size1() + 32 ) * ( 2 + m_min - 1 ) * std::numeric_limits< value_type >::epsilon() );
+	}
+
+	value_type right_error() const {
+		return std::abs( ( 4 * m_matrix.size2() + 32 ) * ( 2 + m_min - 1 ) * std::numeric_limits< value_type >::epsilon() );
+	}
+	
+	value_type matrix_error() const {
+		return std::abs( ( 3 * ( m_max - m_min ) + 40 ) * ( 2 * m_min - 1 ) * std::numeric_limits< value_type >::epsilon() );
 	}
 };
-
-template<class Traits> struct bidiagonal_error:
-	public Traits {
-	typedef typename Traits::value_type value_type;
-};
-
-template<class M,class MQ,class MH>
-template<class Traits>
-void bidiagonal_transform( M& A, MQ& Q, MH& H ){
-	Traits::transform( A, Q, H );
-}
 
 };
 
