@@ -87,8 +87,8 @@ public:
 		typedef vector< value_type > vector_type;
 		typedef householder_transform< vector_type > householder_transform_type;
 
-		assert( left.size1()  == left.size2()  && left.size1()  == A.size1() );
-		assert( right.size1() == right.size2() && right.size1() == A.size2() );
+		assert( left.size1()  == left.size2()  && left.size1()  == m_matrix.size1() );
+		assert( right.size1() == right.size2() && right.size1() == m_matrix.size2() );
 
 		size_type i;
 
