@@ -21,8 +21,10 @@
 
 #include <lsp/householder_transform.h>
 
-#include <boost/numeric/ublas/vector.hpp>
+#include <limits>
+
 #include <boost/numeric/ublas/matrix.hpp>
+#include <boost/numeric/ublas/vector.hpp>
 
 namespace lsp{
 
@@ -74,7 +76,7 @@ public:
  *  @param[out] right The right matrix
  *
  *  The routine calculates and makes transformation.
- *  Intrinsic assumption is that the all matrix are size-suitable, \f$ M_{left}\f$ and \f$ M_{right}\f$ are square.
+ *  Intrinsic assumption is that the all matrix are size-suitable.
  * 
  *  \f$ M_{left} := Q M_{left} \f$
  *
@@ -87,8 +89,8 @@ public:
 		typedef vector< value_type > vector_type;
 		typedef householder_transform< vector_type > householder_transform_type;
 
-		assert( left.size1()  == left.size2()  && left.size1()  == m_matrix.size1() );
-		assert( right.size1() == right.size2() && right.size1() == m_matrix.size2() );
+		assert( left.size1()  == m_matrix.size1() );
+		assert( right.size1() == m_matrix.size2() );
 
 		size_type i;
 
