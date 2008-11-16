@@ -24,6 +24,7 @@
 #include <limits>
 
 #include <boost/numeric/ublas/matrix.hpp>
+#include <boost/numeric/ublas/matrix_proxy.hpp>
 #include <boost/numeric/ublas/storage.hpp>
 
 using namespace boost::numeric::ublas;
@@ -40,22 +41,36 @@ private:
 	struct left_tag {};
 	struct right_tag {};
 private:
+	matrix_vector_slice< matrix_type > m_super;
+	matrix_vector_slice< matrix_type > m_leading;
 	matrix_type& m_matrix;
 private:
+
+	namespace{
+		static value_type shift( value_type q2, value_type q1, value_type e2, value_type, e1 ) const {
+			const value_type f = ( q2*q2 - q1*q1 +  e2*e2 - e1*e1 ) / ( 2*e2*q1 );
+			const value_type t = ( f < 0 ?
+	              		- f + std::pow(( value_type(1)+f*f ),0.5) :
+	              		- f - std::pow(( value_type(1)+f*f ),0.5) );
+
+			return ( q2*q2 + e2*(e2 - q1/t) );
+		}
+	};
+
 	template<class M1, class M2> void apply( M1& left, M2& right, const range& cell, const left_tag& ) const {
 		typedef givens_rotation< value_type > givens_rotation_type;
 		value_type z;
 	
-		z = m_matrix( cell(1)-1, cell(1) );
-		m_matrix( cell(1)-1, cell(1) ) = 0;
+		z = m_super( cell(0) );
+		m_super( cell(0) ) = 0;
 	
 		for( range::const_iterator it = cell.begin() + 1; it != cell.end() ; ++it ) {
-			givens_rotation_type gr( m_matrix(*it,*it), z );
+			givens_rotation_type gr( m_leading(*it), z );
 
 			gr.apply( row(left, *it), row(left, cell(0)) );
 			if( *it == cell( cell.size() - 1 ) )
 				break;
-			gr.apply( m_matrix( (*it+1)-1,(*it+1) ), z );
+			gr.apply( m_super(*it), z );
 		}
 	}
 
@@ -63,33 +78,28 @@ private:
 		typedef givens_rotation< value_type > givens_rotation_type;
 		value_type z;
 
-		z = m_matrix( cell(cell.size()-1)-1, cell(cell.size()-1) );
-		m_matrix( cell(cell.size()-1)-1, cell(cell.size()-1) ) = 0;
+		z = m_super( cell( cell.size() - 2 ) );
+		m_super( cell( cell.size() - 2 ) ) = 0;
 
 		for( range::reverse_const_iterator it = cell.rbegin() - 1; it != cell.rend(); ++it ) {
-			givens_rotation_type gr( m_matrix(*it,*it), z );
+			givens_rotation_type gr( m_leading(*it), z );
 
 			gr.apply( column( right, *it ), column( right, cell( cell.size() - 1 ) ) );
 			if( *it == cell.start() )
 				break;
-			gr.apply( m_matrix( *it-1,*it ), z );
+			gr.apply( m_super(*it-1), z );
 		}
 	}
 
 	template<class M1, class M2> void apply( M1& left, M2& right, const range& cell, const regular_tag& ) const {
 		const value_type lim = std::numeric_limits< value_type >::epsilon() * norm_frobenius( m_matrix ) / m_matrix.size2();
 	
-		for( range::reverse_const_iterator it = cell.rbegin(); it != cell.rend() - 1; ++it ){
-			while( std::abs( m_matrix( *it-1, *it ) ) > lim ) {
-				const value_type f = ( std::pow( q2,2 ) - std::pow( q1,2 ) +  std::pow( e2,2 ) - std::pow( e1,2 ) ) / ( 2 * e2 * q1 );
-				const value_type t = ( f < 0 ?
-					- f + std::pow((1+std::pow( f,2 )),0.5) :
-					- f - std::pow((1+std::pow( f,2 )),0.5) );
-				const value_type sigma = ( std::pow(q2,2) + e2*(e2 - q1/t) );
-
+		for( range::reverse_const_iterator it = cell.rbegin() + 1; it != cell.rend() - 1; ++it ) {
+			while( std::abs( m_super( *it ) ) > lim ) {
+				const value_type sigma = shift( m_leading(*it + 1), m_leading(*it), m_super(*it), m_super(*it - 1) );
 				
 			}
-			m_matrix( *it-1, *it ) = 0;
+			m_super( *it ) = 0;
 		}
 	}
 
@@ -98,31 +108,41 @@ private:
 		if( cell.size() == 1 ) /* Scalar is in diagonal form */
 			return ;
 
-		//const value_type lim = std::numeric_limits< value_type >::epsilon() * norm_frobenius( m_matrix );
+		const value_type lim = 6 * std::numeric_limits< value_type >::epsilon() * norm_frobenius( m_matrix );
 
 		/* Looking for the zero diagonal element */
-		for( range::const_reverse_iterator it = cell.rbegin() + 1; it != cell.rend() ; ++it ){
-			if( m_matrix( *it,*it ) == 0 ) {
+		for( range::const_reverse_iterator it = cell.rbegin() + 1; it != cell.rend() ; ++it ) {
+			if( m_leading( *it ) == 0 ) {
 				apply( left, right, range( *it,          cell(cell.size()) ), left_tag() );
-
+				for( range::const_reverse_iterator it2 = cell.rbegin(), it2 != it; ++it2 ){
+					if( std::abs( m_leading( *it2 ) ) < lim )  m_leading( *it2 ) = 0;
+				}
+				for( range::const_reverse_iterator it2 = cell.rbegin() + 1, it2 != it; ++it2 ){
+					if( std::abs( m_super( *it2 ) ) < lim )    m_super( *it2 ) = 0;
+				}
 				apply( left, right, range( cell.start(), *it+1 ) );
 				apply( left, right, range( *it+1,        cell(cell.size()) ) );
 				return ;
 			}
 		}
 		/* Looking for the zero last diagonal element */
-		if( m_matrix( cell( cell.size() - 1 ), cell( cell.size() - 1 ) ) == 0 ){
+		if( m_leading( cell( cell.size() - 1 ) ) == 0 ) {
 			apply( left, right, cell, right_tag() );
-
+			for( range::const_reverse_iterator it2 = cell.rbegin(), it2 != cell.rend(); ++it2 ){
+				if( std::abs( m_leading( *it2 ) ) < lim )  m_leading( *it2 ) = 0;
+			}
+			for( range::const_reverse_iterator it2 = cell.rbegin() + 1, it2 != cell.rend(); ++it2 ){
+				if( std::abs( m_super( *it2 ) ) < lim )  m_super( *it2 ) = 0;
+			}
 			apply( left, right, range( cell.start(), cell(cell.size()-1) ) );
 			return ;
 		}
 
 		/* Looking for the zero upper diagonal element */
-		for( range::const_reverse_iterator it = cell.rbegin(); it != cell.rend() - 1 ; ++it ){
-			if( m_matrix( *it - 1,*it ) == 0 ) {
-				apply( left, right, range( cell.start(), *it ) );
-				apply( left, right, range( *it,          cell(cell.size()) ) );
+		for( range::const_reverse_iterator it = cell.rbegin() + 1; it != cell.rend(); ++it ) {
+			if( m_super( *it ) == 0 ) {
+				apply( left, right, range( cell.start(), *it + 1 ) );
+				apply( left, right, range( *it + 1,      cell(cell.size()) ) );
 				return ;
 			}
 		}
@@ -132,9 +152,11 @@ private:
 	}
 
 public:
-
 	qr_decomposition( matrix_type& matrix ):
-		m_matrix( matrix ) {
+		m_matrix( matrix ),
+		m_super(   matrix, slice(0, 1, matrix.size() - 1), slice(1, 1, matrix.size() - 1) ),
+		m_leading( matrix, slice(0, 1, matrix.size()),     slice(0, 1, matrix.size())     ) {
+
 		assert( matrix.upper() == 1 && matrix.lower() == 0 );
 	}
 
