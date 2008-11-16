@@ -31,31 +31,33 @@ using namespace boost::numeric::ublas;
 
 namespace lsp{
 
+namespace {
+	template<class T> static T shift( T q2, T q1, T e2, T e1 ) {
+		typedef T value_type;
+		const value_type f = ( q2*q2 - q1*q1 +  e2*e2 - e1*e1 ) / ( 2*e2*q1 );
+		const value_type t = ( f < 0 ?
+              		- f + std::pow(( value_type(1)+f*f ),0.5) :
+              		- f - std::pow(( value_type(1)+f*f ),0.5) );
+			return ( q2*q2 + e2*(e2 - q1/t) );
+	};
+};
+
 template<class T> class qr_decomposition {
 public:
-	typedef T                               value_type;
-	typedef banded_matrix< T >              matrix_type;
+	typedef T matrix_type;
+	typedef typename matrix_type::value_type value_type;
+	//typedef T                               value_type;
+	//typedef banded_matrix< T >              matrix_type;
 	typedef typename matrix_type::size_type size_type;
 private:
 	struct regular_tag {};
 	struct left_tag {};
 	struct right_tag {};
 private:
-	matrix_vector_slice< matrix_type > m_super;
-	matrix_vector_slice< matrix_type > m_leading;
 	matrix_type& m_matrix;
+	mutable matrix_vector_slice< matrix_type > m_super;
+	mutable matrix_vector_slice< matrix_type > m_leading;
 private:
-
-	namespace{
-		static value_type shift( value_type q2, value_type q1, value_type e2, value_type, e1 ) const {
-			const value_type f = ( q2*q2 - q1*q1 +  e2*e2 - e1*e1 ) / ( 2*e2*q1 );
-			const value_type t = ( f < 0 ?
-	              		- f + std::pow(( value_type(1)+f*f ),0.5) :
-	              		- f - std::pow(( value_type(1)+f*f ),0.5) );
-
-			return ( q2*q2 + e2*(e2 - q1/t) );
-		}
-	};
 
 	template<class M1, class M2> void apply( M1& left, M2& right, const range& cell, const left_tag& ) const {
 		typedef givens_rotation< value_type > givens_rotation_type;
@@ -81,7 +83,7 @@ private:
 		z = m_super( cell( cell.size() - 2 ) );
 		m_super( cell( cell.size() - 2 ) ) = 0;
 
-		for( range::reverse_const_iterator it = cell.rbegin() - 1; it != cell.rend(); ++it ) {
+		for( range::const_reverse_iterator it = cell.rbegin() + 1; it != cell.rend(); ++it ) {
 			givens_rotation_type gr( m_leading(*it), z );
 
 			gr.apply( column( right, *it ), column( right, cell( cell.size() - 1 ) ) );
@@ -92,12 +94,37 @@ private:
 	}
 
 	template<class M1, class M2> void apply( M1& left, M2& right, const range& cell, const regular_tag& ) const {
+		typedef givens_rotation< value_type > givens_rotation_type;
+
 		const value_type lim = std::numeric_limits< value_type >::epsilon() * norm_frobenius( m_matrix ) / m_matrix.size2();
 	
-		for( range::reverse_const_iterator it = cell.rbegin() + 1; it != cell.rend() - 1; ++it ) {
+		for( range::const_reverse_iterator it = cell.rbegin() + 1; it != cell.rend(); ++it ) {
 			while( std::abs( m_super( *it ) ) > lim ) {
-				const value_type sigma = shift( m_leading(*it + 1), m_leading(*it), m_super(*it), m_super(*it - 1) );
-				
+
+				value_type en1 = ( *it != cell(0) ? m_super(*it - 1) : value_type(0) );
+				value_type e0 = m_leading( cell(0) ) - shift( m_leading(*it + 1), m_leading(*it), m_super(*it), en1 ) / m_leading( cell(0) );
+				value_type z = m_super( cell(0) );
+
+				givens_rotation_type gr_left( e0, z );
+				for( range::const_iterator it2 = cell.begin() + 1; *it2 != *it + 2; ++it2 ) {
+					//givens_rotation_type gr_left( m_super(*it2-2), z );
+	
+					gr_left.apply( m_leading(*it2-1), m_super(*it2-1) );
+					gr_left.apply( column(right,*it2-1), column(right,*it2) );
+
+					z = gr_left.s() * m_leading(*it2);
+					m_leading(*it2) = gr_left.c() * m_leading(*it2);
+		
+					givens_rotation_type gr_right( m_leading(*it2-1), z );
+					gr_right.apply( m_super(*it2-1), m_leading(*it2) );
+					gr_right.apply( row(left,*it2-1), row(left,*it2) );
+
+					if( *it2 == cell( cell.size() - 1 ) ) break;
+					z = gr_right.s() * m_super(*it2);
+					m_super(*it2) = gr_right.c() * m_super(*it2);
+
+					gr_left = givens_rotation_type( m_super(*it2-1), z );
+				}
 			}
 			m_super( *it ) = 0;
 		}
@@ -114,10 +141,10 @@ private:
 		for( range::const_reverse_iterator it = cell.rbegin() + 1; it != cell.rend() ; ++it ) {
 			if( m_leading( *it ) == 0 ) {
 				apply( left, right, range( *it,          cell(cell.size()) ), left_tag() );
-				for( range::const_reverse_iterator it2 = cell.rbegin(), it2 != it; ++it2 ){
+				for( range::const_reverse_iterator it2 = cell.rbegin(); it2 != it; ++it2 ){
 					if( std::abs( m_leading( *it2 ) ) < lim )  m_leading( *it2 ) = 0;
 				}
-				for( range::const_reverse_iterator it2 = cell.rbegin() + 1, it2 != it; ++it2 ){
+				for( range::const_reverse_iterator it2 = cell.rbegin() + 1; it2 != it; ++it2 ){
 					if( std::abs( m_super( *it2 ) ) < lim )    m_super( *it2 ) = 0;
 				}
 				apply( left, right, range( cell.start(), *it+1 ) );
@@ -128,10 +155,10 @@ private:
 		/* Looking for the zero last diagonal element */
 		if( m_leading( cell( cell.size() - 1 ) ) == 0 ) {
 			apply( left, right, cell, right_tag() );
-			for( range::const_reverse_iterator it2 = cell.rbegin(), it2 != cell.rend(); ++it2 ){
+			for( range::const_reverse_iterator it2 = cell.rbegin(); it2 != cell.rend(); ++it2 ){
 				if( std::abs( m_leading( *it2 ) ) < lim )  m_leading( *it2 ) = 0;
 			}
-			for( range::const_reverse_iterator it2 = cell.rbegin() + 1, it2 != cell.rend(); ++it2 ){
+			for( range::const_reverse_iterator it2 = cell.rbegin() + 1; it2 != cell.rend(); ++it2 ){
 				if( std::abs( m_super( *it2 ) ) < lim )  m_super( *it2 ) = 0;
 			}
 			apply( left, right, range( cell.start(), cell(cell.size()-1) ) );
@@ -154,14 +181,14 @@ private:
 public:
 	qr_decomposition( matrix_type& matrix ):
 		m_matrix( matrix ),
-		m_super(   matrix, slice(0, 1, matrix.size() - 1), slice(1, 1, matrix.size() - 1) ),
-		m_leading( matrix, slice(0, 1, matrix.size()),     slice(0, 1, matrix.size())     ) {
+		m_super(   matrix, slice(0, 1, matrix.size2() - 1), slice(1, 1, matrix.size2() - 1) ),
+		m_leading( matrix, slice(0, 1, matrix.size2()),     slice(0, 1, matrix.size2())     ) {
 
 		assert( matrix.upper() == 1 && matrix.lower() == 0 );
 	}
 
 	template<class M1, class M2> void apply( M1& left, M2& right ) const {
-
+		apply( left, right, range(0, m_matrix.size2() ) );
 	}
 	
 };
