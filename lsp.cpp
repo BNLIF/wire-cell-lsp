@@ -15,8 +15,8 @@ int main(){
 	assert( m > 1 );
 	assert( n > 1 );
 
-	matrix< double > A( m, n );
-	vector< double > b( m);
+	matrix< double > A( m, n ),A0;
+	vector< double > b( m),b0;
 
 	for( i = 0; i < m; i++ ){
 	for( j = 0; j < n; j++ ){
@@ -25,14 +25,16 @@ int main(){
 		std::cin >> b(i);
 	}
 
+	A0=A;
+	b0=b;
 	vector< double > x = lsp::least_squares(A,b);
 
-	std::cout.precision(4);
+	std::cout.precision(6);
 	std::cout << std::fixed;
 
-	for( i = 0; i < x.size(); i++)
-		std::cout << x[i] << " ";
+	//for( i = 0; i < x.size(); i++)
+//		std::cout << x[i] << " ";
 
-	std::cout << std::endl;
+	std::cout << norm_2( prod(A0,x) - b0 ) << std::endl;
 	return 0;
 }

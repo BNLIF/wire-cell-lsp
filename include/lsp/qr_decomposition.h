@@ -140,7 +140,7 @@ private:
 		/* Looking for the zero diagonal element */
 		for( range::const_reverse_iterator it = cell.rbegin() + 1; it != cell.rend() ; ++it ) {
 			if( m_leading( *it ) == 0 ) {
-				apply( left, right, range( *it,          cell(cell.size()) ), left_tag() );
+				apply( left, right, range( *it, cell.start() + cell.size() ), left_tag() );
 				for( range::const_reverse_iterator it2 = cell.rbegin(); it2 != it; ++it2 ){
 					if( std::abs( m_leading( *it2 ) ) < lim )  m_leading( *it2 ) = 0;
 				}
@@ -148,7 +148,7 @@ private:
 					if( std::abs( m_super( *it2 ) ) < lim )    m_super( *it2 ) = 0;
 				}
 				apply( left, right, range( cell.start(), *it+1 ) );
-				apply( left, right, range( *it+1,        cell(cell.size()) ) );
+				apply( left, right, range( *it+1, cell.start() + cell.size() ) );
 				return ;
 			}
 		}
@@ -169,7 +169,7 @@ private:
 		for( range::const_reverse_iterator it = cell.rbegin() + 1; it != cell.rend(); ++it ) {
 			if( m_super( *it ) == 0 ) {
 				apply( left, right, range( cell.start(), *it + 1 ) );
-				apply( left, right, range( *it + 1,      cell(cell.size()) ) );
+				apply( left, right, range( *it + 1, cell.start() + cell.size() ) );
 				return ;
 			}
 		}

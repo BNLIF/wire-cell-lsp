@@ -29,7 +29,7 @@ int main(){
 
 	B = A;
 
-	std::cout << std::endl << A << std::endl;
+	//std::cout << std::endl << A << std::endl;
 
 	lsp::bidiagonal_transform< matrix< double > > bd_trans( B );
 
@@ -38,9 +38,9 @@ int main(){
 
 	bd_trans.apply(Q,H);
 
-	std::cout << bd_trans.left_error() << std::endl;
-	std::cout << bd_trans.matrix_error() << std::endl;
-	std::cout << bd_trans.right_error() << std::endl;
+	//std::cout << bd_trans.left_error() << std::endl;
+	//std::cout << bd_trans.matrix_error() << std::endl;
+	//std::cout << bd_trans.right_error() << std::endl;
 
 	
 	//QH = lsp::transform_to_bidiagonal( B );
@@ -56,21 +56,23 @@ int main(){
 		}
 	}
 
-	std::cout << std::endl << B << std::endl;
+	//std::cout << std::endl << B << std::endl;
 	std::cout << ba << std::endl;
 
-	std::cout << Q << std::endl << H << std::endl;
+	//std::cout << Q << std::endl << H << std::endl;
 
-	std::cout << norm_frobenius(A) << " " << norm_frobenius(B) << std::endl;
-	std::cout << norm_frobenius( Q ) << " " << norm_frobenius( H ) << std::endl;
+	//std::cout << norm_frobenius(A) << " " << norm_frobenius(B) << std::endl;
+	//std::cout << norm_frobenius( Q ) << " " << norm_frobenius( H ) << std::endl;
 
 	A = prod( A, H );
 	A = prod( Q, A );
-	std::cout << std::endl << A << std::endl;
+	//std::cout << std::endl << A << std::endl;
+
+	std::cout << n << "\t" << norm_frobenius(A-B) << std::endl;
 
 	B = prod( B, trans( H ) );
 	B = prod( trans( Q ), B );
-	std::cout << std::endl << B << std::endl;	
+	
 
 	return 0;
 }
