@@ -108,6 +108,8 @@ private:
 				givens_rotation_type gr_left( e0, z );
 				for( range::const_iterator it2 = cell.begin() + 1; *it2 != *it + 2; ++it2 ) {
 					//givens_rotation_type gr_left( m_super(*it2-2), z );
+					//if( it2 != cell.begin() + 1 )
+					//	gr_left = givens_rotation_type( m_super(*it2-2), z );
 	
 					gr_left.apply( m_leading(*it2-1), m_super(*it2-1) );
 					gr_left.apply( column(right,*it2-1), column(right,*it2) );
@@ -119,7 +121,7 @@ private:
 					gr_right.apply( m_super(*it2-1), m_leading(*it2) );
 					gr_right.apply( row(left,*it2-1), row(left,*it2) );
 
-					if( *it2 == cell( cell.size() - 1 ) ) break;
+					if( *it2 == *it + 1 ) break;
 					z = gr_right.s() * m_super(*it2);
 					m_super(*it2) = gr_right.c() * m_super(*it2);
 
