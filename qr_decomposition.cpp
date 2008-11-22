@@ -1,4 +1,4 @@
-#include "qr_decomposition.h"
+#include <lsp/qr_decomposition.h>
 
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/vector.hpp>
@@ -37,7 +37,7 @@ int main(){
 
 	//lsp::qr_left_givens_transform( q, e, 2, q.size(), G );
 	//lsp::qr_right_givens_transform( q, e, 1, q.size(), W );
-	lsp::qr_decomposite_cell( q, e, 0, q.size(), G, W );
+	//lsp::qr_decomposite_cell( q, e, 0, q.size(), G, W );
 
 	/* pack */
 	A(0,0) = q[0];

@@ -1,7 +1,7 @@
 #ifndef _least_squares_h
 #define _least_squares_h
 
-#include "singular_decomposition.h"
+#include <lsp/singular_decomposition.h>
 
 #include <limits>
 
@@ -32,10 +32,13 @@ template<class T> vector< T > least_squares( matrix< T >& A, vector< T >& b ){
 		}
 	}
 
-	std::pair< matrix< typename matrix< T >::value_type >,
-	           matrix< typename matrix< T >::value_type > > WV = singular_decomposition( A );
+	matrix< double > left = identity_matrix<double>(A.size1());
+	matrix< double > right = identity_matrix<double>(A.size2());
 
-	b = prod( WV.first, b );
+	lsp::singular_decomposition< matrix<double > > sd( A );
+	sd.apply(left, right);
+
+	b = prod( left, b );
 	
 	vector< typename matrix< T >::value_type > p( A.size2() );
 	for( i = 0; i < A.size2(); ++i ){
@@ -45,7 +48,7 @@ template<class T> vector< T > least_squares( matrix< T >& A, vector< T >& b ){
 			p[i] = 0;
 	}
 
-	return prod( WV.second, p );
+	return prod( right, p );
 }
 
 };

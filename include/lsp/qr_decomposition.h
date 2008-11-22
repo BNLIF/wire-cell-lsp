@@ -46,8 +46,6 @@ template<class T> class qr_decomposition {
 public:
 	typedef T matrix_type;
 	typedef typename matrix_type::value_type value_type;
-	//typedef T                               value_type;
-	//typedef banded_matrix< T >              matrix_type;
 	typedef typename matrix_type::size_type size_type;
 private:
 	struct regular_tag {};
@@ -107,10 +105,7 @@ private:
 
 				givens_rotation_type gr_left( e0, z );
 				for( range::const_iterator it2 = cell.begin() + 1; *it2 != *it + 2; ++it2 ) {
-					//givens_rotation_type gr_left( m_super(*it2-2), z );
-					//if( it2 != cell.begin() + 1 )
-					//	gr_left = givens_rotation_type( m_super(*it2-2), z );
-	
+
 					gr_left.apply( m_leading(*it2-1), m_super(*it2-1) );
 					gr_left.apply( column(right,*it2-1), column(right,*it2) );
 

@@ -43,6 +43,30 @@ public:
 	}
 };
 
+template<class T, class Less = std::less< typename T::value_type > > class vector_less:
+	public std::binary_function< typename T::value_type, typename T::value_type, bool> {
+private:
+	typedef T                                vector_type;
+	typedef typename vector_type::value_type value_type;
+	typedef typename vector_type::size_type  size_type;
+	typedef Less                             less_type;
+	
+	const vector_type& m_vector;
+	less_type m_less;
+public:
+	vector_less( const vector_type& v ):
+		m_vector( v ) {
+	}
+/**
+ *  @param x
+ *  @param y
+ *  @return true if \f$ v_x < v_y \f$, false otherwise
+ */
+	bool operator() (size_type x, size_type y) const {
+		return m_less( m_vector( x ), m_vector( y ) );
+	}
+};	
+
 };
 
 #endif // _UTILS_H
