@@ -14,10 +14,10 @@ singular_decomposition.test: singular_decomposition.cpp ./include/lsp/singular_d
 qr_decomposition.test: qr_decomposition.cpp ./include/lsp/qr_decomposition.h ./include/lsp/givens_rotation.h
 	$(CXX) $(CXXFLAGS)  -o qr_decomposition.test -DTEST qr_decomposition.cpp
 
-least_squares.test: least_squares.cpp least_squares.h ./include/lsp/singular_decomposition.h
+least_squares.test: least_squares.cpp ./include/lsp/least_squares.h ./include/lsp/singular_decomposition.h
 	$(CXX) $(CXXFLAGS)  -o least_squares.test -DTEST least_squares.cpp
 
-nnls.test: nnls.cpp nnls.h least_squares.h
+nnls.test: nnls.cpp nnls.h ./include/lsp/least_squares.h
 	$(CXX) $(CXXFLAGS)  -o nnls.test -DTEST nnls.cpp
 
 lsp: lsp.cpp

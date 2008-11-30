@@ -1,7 +1,7 @@
 #ifndef _nnls_h
 #define _nnls_h
 
-#include "least_squares.h"
+#include <lsp/least_squares.h>
 
 #include <limits>
 

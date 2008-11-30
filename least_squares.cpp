@@ -1,4 +1,4 @@
-#include "least_squares.h"
+#include <lsp/least_squares.h>
 
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/vector.hpp>
@@ -14,6 +14,7 @@ int main(){
 	unsigned int i,j,m,n;
 	std::cin >> m >> n;
 
+	matrix< double > cov( n, n );
 	matrix< double > A( m, n ),A0;
 	vector< double > b( m),b0;
 
@@ -26,7 +27,10 @@ int main(){
 
 	A0=A;b0=b;
 
-	vector< double > x = lsp::least_squares(A,b);
+	lsp::least_squares< matrix< double >, vector< double > > ls(A,b);
+
+	vector< double > x;
+	ls.solve(x,cov);
 
 	std::cout << format("%.6f") % norm_2( prod( A0, x ) - b0 ) << std::endl;
 

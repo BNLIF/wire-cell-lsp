@@ -43,6 +43,11 @@ public:
 	}
 };
 
+/**
+ *  @class vector_less
+ *  @brief comparsion functor for permutation vector
+ *
+ */
 template<class T, class Less = std::less< typename T::value_type > > class vector_less:
 	public std::binary_function< typename T::value_type, typename T::value_type, bool> {
 private:

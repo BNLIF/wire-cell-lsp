@@ -32,6 +32,24 @@ using namespace boost::numeric::ublas;
 
 namespace lsp{
 
+/**
+ *  @class singular_decomposition
+ *  @brief A functor for the singular value decomposition (SVD)
+ *
+ *  SVD is a factorization of matrix that
+ *  \f[
+ *  Q A H = S \quad \mbox{where} \quad S = \left| \begin{array}{ccccc}
+ *     s_1   &       &       &       &       \\
+ *           & s_2   &       &       &       \\
+ *           &       &\ddots &       &       \\
+ *           &       &       &s_{n-1}&       \\
+ *           &       &       &       & s_n   \\
+ *  \end{array} \right|,\quad A \quad \mbox{is initial matrix,} \quad U, V \quad \mbox{are unitary matrixes,} \quad s_1 \ge s_2 \ge \dots \ge s_{n-1} \ge s_{n} \ge 0 
+ *  \f]
+ *
+ *  More widely known form of SVD is \f$ A = U S V^T \f$ and this way there are obvious equations: \f$ U \equiv Q^T,\quad V^T \equiv H^T \f$
+ *
+ */
 template<class T> class singular_decomposition {
 public:
 	typedef T matrix_type;
@@ -44,6 +62,13 @@ private:
 	mutable banded_adaptor_type m_banded;
 	mutable qr_decomposition< banded_adaptor_type > m_qr_decomp;
 public:
+/**
+ *  @brief An object constructor
+ *  @param[in,out] matrix The reference to matrix object to be decomposited
+ *
+ *  Actual decomposition will be performed as soon as apply(M1& left, M2& right) will be called.
+ *
+ */
 	singular_decomposition( matrix_type& matrix ):
 		m_matrix( matrix ),
 		m_bd_trans( matrix ),
@@ -53,6 +78,21 @@ public:
 
 	}
 
+/**
+ *  @brief Decomposition operaton
+ *  @param[out] left  The left matrix
+ *  @param[out] right The right matrix
+ *
+ *  The routine decomposites the matrix.
+ *  Intrinsic assumption is that the all matrix are size-suitable.
+ * 
+ *  \f$ M_{left} := Q M_{left} \f$
+ *
+ *  \f$ M_{right} := M_{right} H \f$
+ *
+ *  \f$ M_{matrix} := S \f$
+ *
+ */
 	template<class M1, class M2> void apply( M1& left, M2& right ) const {
 		typedef matrix_vector_slice< matrix_type > matrix_vector_slice_type;
 		typedef vector< size_type > permutation_type;

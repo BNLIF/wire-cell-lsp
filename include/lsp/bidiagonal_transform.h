@@ -43,7 +43,7 @@ namespace lsp{
  *           &       &\ddots &\ddots &       \\
  *           &       &       &q_{n-1}& e_n   \\
  *           &       &       &       & q_n   \\
- *  \end{array} \right|,\quad A \quad \mbox{is initial matrix}
+ *  \end{array} \right|,\quad A \quad \mbox{is initial matrix} \quad Q,H \quad \mbox{are unitary matrixes}
  *  \f]
  *
  */

@@ -42,6 +42,13 @@ namespace {
 	};
 };
 
+/**
+ *  @class qr_decomposition
+ *  @brief A functor for the modified QR decomposition
+ *
+ *
+ *
+ */
 template<class T> class qr_decomposition {
 public:
 	typedef T matrix_type;
