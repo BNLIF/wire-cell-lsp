@@ -1,5 +1,23 @@
-#ifndef _nnls_h
-#define _nnls_h
+/*
+    $Id$
+    Copyright (C) 2008  Matwey V. Kornilov <matwey.kornilov@gmail.com>
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+#ifndef _NNLS_H
+#define _NNLS_H
 
 #include <lsp/least_squares.h>
 
@@ -37,6 +55,7 @@ template<class T> vector< T > nnls( matrix< T >& A, const vector< T >& b ){
 	typename matrix< T >::size_type i,m;
 	matrix< T > Ep(A.size1(), A.size2());
 	vector< T > fp = b;
+	least_squares< matrix< T >, vector< T > > ls(Ep,fp);
 	vector< T > z;
 	bool complete;
 	typename vector< T >::size_type t,q;
@@ -81,7 +100,7 @@ s6:	fp = b;
 		matrix_column< matrix< typename matrix< T >::value_type > >(Ep, (*it))
 			    = zero_vector< typename matrix< T >::value_type >( A.size1() );
 	
-	z = lsp::least_squares(Ep,fp);
+	ls.solve( z );
 	for( it = Z.begin();it != Z.end(); ++it )
 		z(*it ) = 0;
 		
@@ -128,4 +147,5 @@ end:	return x;
 
 };
 
-#endif // _nnls_h
+#endif // _NNLS_H
+

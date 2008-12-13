@@ -85,6 +85,35 @@ public:
 		ret = prod( right, ret );
 	}
 
+	template<class sV> void solve( sV& ret ) const {
+		typedef sV result_vector_type;
+		typedef matrix_vector_slice< matrix_type > matrix_vector_slice_type;
+		typedef matrix< value_type > unitary_marix_type;
+
+		unitary_marix_type left( identity_matrix< value_type > (m_matrix.size1()) );
+		unitary_marix_type right( identity_matrix< value_type > (m_matrix.size2()) );
+
+		m_svd.apply(left, right);
+
+		m_vector = prod( left, m_vector );
+	
+		matrix_vector_slice_type singular( m_matrix,
+			slice(0, 1, std::min( m_matrix.size1(), m_matrix.size2() )),
+			slice(0, 1, std::min( m_matrix.size1(), m_matrix.size2() )) );
+
+		ret.resize( singular.size() );
+
+		for( typename matrix_vector_slice_type::iterator it = singular.begin(); it != singular.end(); ++it ){
+			if( *it != 0 ) {
+				ret( it.index() ) = m_vector( it.index() ) / (*it);
+			} else {
+				ret( it.index() ) = 0;
+			}
+		}
+
+		ret = prod( right, ret );
+	}
+
 };
 
 };
