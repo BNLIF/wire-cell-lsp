@@ -17,7 +17,7 @@ qr_decomposition.test: qr_decomposition.cpp ./include/lsp/qr_decomposition.h ./i
 least_squares.test: least_squares.cpp ./include/lsp/least_squares.h ./include/lsp/singular_decomposition.h
 	$(CXX) $(CXXFLAGS)  -o least_squares.test -DTEST least_squares.cpp
 
-nnls.test: nnls.cpp nnls.h ./include/lsp/least_squares.h
+nnls.test: nnls.cpp ./include/lsp/nnls.h ./include/lsp/least_squares.h
 	$(CXX) $(CXXFLAGS)  -o nnls.test -DTEST nnls.cpp
 
 lsp: lsp.cpp

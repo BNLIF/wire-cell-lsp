@@ -70,7 +70,65 @@ public:
 	bool operator() (size_type x, size_type y) const {
 		return m_less( m_vector( x ), m_vector( y ) );
 	}
-};	
+};
+
+template<class T, class Less = std::less< typename T::value_type > > class vector_less_nnls1:
+	public std::binary_function< typename T::value_type, typename T::value_type, bool> {
+private:
+	typedef T                                vector_type;
+	typedef typename vector_type::value_type value_type;
+	typedef typename vector_type::size_type  size_type;
+	typedef Less                             less_type;
+	
+	const vector_type& m_vector1,m_vector2;
+	less_type m_less;
+public:
+	vector_less_nnls1( const vector_type& v1, const vector_type& v2 ):
+		m_vector1( v1 ),m_vector2( v2 ) {
+	}
+	bool operator() (size_type x, size_type y) const {
+		if( m_vector2( x ) > 0 )
+			return false;
+		if( m_vector2( y ) > 0 )
+			return true;
+		return m_less( m_vector1( x )/(m_vector1( x )-m_vector2( x )), m_vector1( y )/(m_vector1( y )-m_vector2( y )) );
+	}
+};
+
+template<class S, class V> class x_is_zero:
+	public std::unary_function< S, bool > {
+private:
+	const V& m_x;
+public:
+	explicit x_is_zero( const V& x ): m_x(x) {
+	}
+	bool operator() (S arg) const {
+		return (m_x(arg) <= 0);
+	}
+};
+
+template<class V, class IS, class Cond > bool is_vector_elem( const V& vec, const IS& index_space ){
+	typedef typename V::value_type value_type;
+	typedef V vector_type;
+	typedef IS index_space_type;
+	typedef Cond condition_type;
+	
+	condition_type cond;
+	for( typename index_space_type::const_iterator it = index_space.begin(); it != index_space.end(); ++it ) {
+		if( ! cond( vec(*it), 0 ) ) return false;
+	}
+	return true;
+}
+
+class null_type {
+
+public:
+
+static null_type s_null;
+
+public:
+
+};
 
 };
 

@@ -1,4 +1,4 @@
-#include "nnls.h"
+#include <lsp/nnls.h>
 
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/vector.hpp>
