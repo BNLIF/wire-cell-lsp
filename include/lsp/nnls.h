@@ -63,9 +63,9 @@ public:
 		w = prod( trans( m_matrix ), m_vector - prod( m_matrix, ret ) );
 
 		while( ! is_vector_elem< vector_type, index_space_type, std::less_equal<value_type> >( w, zero ) ){
-			typename index_space_type::const_iterator max_w = std::max_element( zero.begin(), zero.end(), vector_less< vector_type, std::less< typename vector_type::value_type > >( w ) );
-			positive.push_back( *max_w );
-			zero.erase( std::remove( zero.begin(), zero.end(), *max_w ), zero.end() );
+			size_type max_w = *(std::max_element( zero.begin(), zero.end(), vector_less< vector_type, std::less< typename vector_type::value_type > >( w ) ));
+			positive.push_back( max_w );
+			zero.erase( std::remove( zero.begin(), zero.end(), max_w ), zero.end() );
 
 			bool re_check = true;
 			do {
@@ -81,8 +81,8 @@ public:
 				for( typename index_space_type::const_iterator it = zero.begin();it != zero.end(); ++it )
 					z( *it ) = 0;
 
-				if( re_check && (z(*max_w) <= 0) ) { // rounding error checking
-					w(*max_w) = 0;
+				if( re_check && (z(max_w) <= 0) ) { // rounding error checking
+					w(max_w) = 0;
 					break;
 				}
 
@@ -97,7 +97,10 @@ public:
 				ret = ret + min_1_value * ( z - ret );
 				
 				for( typename index_space_type::const_iterator it = positive.begin();it != positive.end(); ++it ) {
-					if( ret(*it) <= 0 ) zero.push_back( *it );
+					if( ret(*it) <= 0 ){
+						ret(*it) = 0;
+						zero.push_back( *it );
+					}
 				}
 				positive.erase( std::remove_if( positive.begin(), positive.end(), x_is_zero< size_type, vector_type >(ret) ), positive.end() );
 				/*

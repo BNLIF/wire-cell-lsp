@@ -13,7 +13,7 @@ int main(){
 	assert( m > 1 );
 	assert( n > 1 );
 
-	matrix< double > A0,A( m, n );
+	matrix< double > A0,A( m, n ),cov(n,n);
 	vector< double > b0,b( m );
 	vector< double > w( m );
 	double am;
@@ -42,8 +42,10 @@ int main(){
 
 	A0 = A;
 	b0 = b;
-
-	vector< double > x = lsp::nnls( A, b );
+	
+	lsp::nnls< matrix< double >, vector< double >  > nnls( A, b );
+	vector< double > x;
+	nnls.solve( x , cov );
 
 	vector< double > r = prod( A0, x ) - b0;
 
