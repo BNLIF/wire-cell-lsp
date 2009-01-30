@@ -27,6 +27,7 @@
 
 #include <algorithm>
 #include <list>
+#include <limits>
 
 using namespace boost::numeric::ublas;
 
@@ -55,19 +56,22 @@ public:
 		typedef vector< value_type >    vector_type;
 		typedef least_squares< matrix_type, vector_type > least_squares_type;
 		
+		value_type  lim;
 		vector_type w,z;
 		index_space_type positive,zero;
 
 		for( size_type i = 0; i < m_matrix.size2(); ++i ) zero.push_back( i );
 		ret = zero_vector< value_type >( m_matrix.size2() );
 		w = prod( trans( m_matrix ), m_vector - prod( m_matrix, ret ) );
+		lim = std::numeric_limits< value_type >::epsilon() * ( norm_2(m_vector) * ( 2*m_matrix.size1()*m_matrix.size2() - m_matrix.size2() )+  norm_2(ret) * ( 4*m_matrix.size1()*m_matrix.size2() - m_matrix.size1() - m_matrix.size2() ) );
+		for( typename vector_type::iterator it = w.begin(); it != w.end(); ++it )
+			if( std::abs(*it) < lim ) *it=0; // rounding error checking
 
 		while( ! is_vector_elem< vector_type, index_space_type, std::less_equal<value_type> >( w, zero ) ){
 			size_type max_w = *(std::max_element( zero.begin(), zero.end(), vector_less< vector_type, std::less< typename vector_type::value_type > >( w ) ));
 			positive.push_back( max_w );
 			zero.erase( std::remove( zero.begin(), zero.end(), max_w ), zero.end() );
-
-			bool re_check = true;
+		
 			do {
 				vector_type f = m_vector;
 				matrix< value_type > Ep( m_matrix.size1(), m_matrix.size2() );
@@ -81,21 +85,19 @@ public:
 				for( typename index_space_type::const_iterator it = zero.begin();it != zero.end(); ++it )
 					z( *it ) = 0;
 
-				if( re_check && (z(max_w) <= 0) ) { // rounding error checking
-					w(max_w) = 0;
-					break;
-				}
-
 				if( is_vector_elem< vector_type, index_space_type, std::greater<value_type> >( z, positive ) ) {
 					ret = z;
 					w = prod( trans( m_matrix ), m_vector - prod( m_matrix, ret ) );
+					lim = std::numeric_limits< value_type >::epsilon() * ( norm_2(m_vector) * ( 2*m_matrix.size1()*m_matrix.size2() - m_matrix.size2() )+  norm_2(ret) * ( 4*m_matrix.size1()*m_matrix.size2() - m_matrix.size1() - m_matrix.size2() ) );
+					for( typename vector_type::iterator it = w.begin(); it != w.end(); ++it )
+						if( std::abs(*it) < lim ) *it=0; // rounding error checking
 					break;
 				}
 				
 				typename index_space_type::const_iterator min_1 = std::min_element( positive.begin(), positive.end(), vector_less_nnls1< vector_type, std::less< typename vector_type::value_type > >(ret,z) );
 				value_type min_1_value = ret(*min_1) / (ret(*min_1)-z(*min_1));
 				ret = ret + min_1_value * ( z - ret );
-				
+
 				for( typename index_space_type::const_iterator it = positive.begin();it != positive.end(); ++it ) {
 					if( ret(*it) <= 0 ){
 						ret(*it) = 0;
@@ -103,13 +105,6 @@ public:
 					}
 				}
 				positive.erase( std::remove_if( positive.begin(), positive.end(), x_is_zero< size_type, vector_type >(ret) ), positive.end() );
-				/*
-				найти q из P такой, что x[q]/(x[q]-z[q]) = min { x[j]/(x[j]-z[j]), z[j]<=0 j из P }
-				положить a = x[q]/(x[q]-z[q])
-				x := x + a ( z - x )
-				переместитьиз P в Z все индексы j из P для которыз x[j]=0
-				*/
-				re_check = false;
 			} while( true );
 		}
 	}
