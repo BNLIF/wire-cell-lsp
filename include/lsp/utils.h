@@ -19,13 +19,17 @@
 #ifndef _UTILS_H
 #define _UTILS_H
 
+#include <algorithm>
 #include <cmath>
 #include <functional>
 
+/**
+ *  @brief Basic namespace
+ */
 namespace lsp {
 /**
  *  @class less_abs
- *  @brief comparsion of absoulte value
+ *  @brief Comparsion of absoulte values
  *
  */
 template<class T> class less_abs:
@@ -45,7 +49,7 @@ public:
 
 /**
  *  @class vector_less
- *  @brief comparsion functor for permutation vector
+ *  @brief Comparsion functor for permutation vector
  *
  */
 template<class T, class Less = std::less< typename T::value_type > > class vector_less:
@@ -55,7 +59,7 @@ private:
 	typedef typename vector_type::value_type value_type;
 	typedef typename vector_type::size_type  size_type;
 	typedef Less                             less_type;
-	
+
 	const vector_type& m_vector;
 	less_type m_less;
 public:
@@ -72,6 +76,11 @@ public:
 	}
 };
 
+/**
+ *  @class vector_less_nnls1
+ *  @brief Special comparsion functor for NNLS
+ *
+ */
 template<class T, class Less = std::less< typename T::value_type > > class vector_less_nnls1:
 	public std::binary_function< typename T::value_type, typename T::value_type, bool> {
 private:
@@ -79,13 +88,21 @@ private:
 	typedef typename vector_type::value_type value_type;
 	typedef typename vector_type::size_type  size_type;
 	typedef Less                             less_type;
-	
+
 	const vector_type& m_vector1,m_vector2;
 	less_type m_less;
 public:
 	vector_less_nnls1( const vector_type& v1, const vector_type& v2 ):
 		m_vector1( v1 ),m_vector2( v2 ) {
 	}
+/**
+ *  @param x
+ *  @param y
+ *  @return true if \f$ \frac{v_x}{v_x-z_x} < \frac{v_y}{v_y-z_y} \f$, false otherwise.
+ *
+ *  The comparsion works only for the nonpositive elements of the vectors.
+ *
+ */
 	bool operator() (size_type x, size_type y) const {
 		if( m_vector2( x ) > 0 )
 			return false;
@@ -95,31 +112,53 @@ public:
 	}
 };
 
-template<class S, class V> class x_is_zero:
-	public std::unary_function< S, bool > {
-private:
-	const V& m_x;
-public:
-	explicit x_is_zero( const V& x ): m_x(x) {
-	}
-	bool operator() (S arg) const {
-		return (m_x(arg) <= 0);
-	}
-};
-
+/**
+ *  @brief A function for cheking condition on the vector elements
+ *  @param[in] vec The given vector
+ *  @param[in] index_space The index space \f$ I \f$
+ *  @return true if \f$ \forall i \in I :  \f$, false otherwise
+ *
+ */
 template<class V, class IS, class Cond > bool is_vector_elem( const V& vec, const IS& index_space ){
 	typedef typename V::value_type value_type;
 	typedef V vector_type;
 	typedef IS index_space_type;
 	typedef Cond condition_type;
-	
+
 	condition_type cond;
 	for( typename index_space_type::const_iterator it = index_space.begin(); it != index_space.end(); ++it ) {
+		assert( *it < vec.size() );
 		if( ! cond( vec(*it), 0 ) ) return false;
 	}
 	return true;
 }
 
+/**
+ *  @brief A function for swap an index between two index spaces
+ *  @param src Source index space
+ *  @param dest Destination index space
+ *  @param index index
+ *
+ *  If index is presented in source space it removes the index from source space
+ *  and pushs back to destination space,
+ */
+template<class IS,class IT> void swap_indexes( IS& src, IS& dest, const IT& index ) {
+	typedef IS index_space_type;
+	typedef IT index_type;
+
+	typename index_space_type::iterator it = std::find( src.begin(), src.end(), index );
+	if( it != src.end() ){
+		dest.push_back( index );
+		std::swap( *it, src.back() );
+		src.pop_back();
+	}
+}
+
+/**
+ *  @class null_type
+ *  @brief Special null type with some predifined operations
+ *
+ */
 class null_type {
 
 public:

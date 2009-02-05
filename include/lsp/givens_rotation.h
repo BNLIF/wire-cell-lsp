@@ -51,16 +51,17 @@ namespace lsp{
  */
 template< class T > class givens_rotation{
 public:
-	typedef T              value_type;
+	typedef T value_type; //!< The type of the elements used for constructing the transformation. \f$ c \quad \mbox{and} \quad  s \f$ also have the same type.
 
 private:
 	value_type m_c, m_s;
+
 public:
 /**
  *  @brief An object constructor
  *  @param[in,out] x The first vector coordinate. After construction \f$ x = r \equiv \sqrt{x^2+y^2} \f$
  *  @param[in,out] y The second vector cooridnate. After construction \f$ y = 0 \f$
- * 
+ *
  *  It computes \f$ c, s \f$ such that \f[
  *  \left|\begin{array}{cc}
  *  c & s \\
@@ -90,7 +91,7 @@ public:
 					m_s = -m_s;
 				m_c = w * m_s;
 				x = std::abs( y * q );
-				y = 0;
+				y = value_type( 0 );
 			}
 		} else {
 			w = y / x;
@@ -100,9 +101,8 @@ public:
 				m_c = -m_c;
 			m_s = w * m_c;
 			x = std::abs( x * q );
-			y = 0;
+			y = value_type( 0 );
 		}
-
 	}
 
 /**
@@ -130,6 +130,7 @@ public:
  *  may be also computed if we represent the matrix as vector of vector-row or
  *  vector-column accordingly. Put it in other way we may assume that \f$ x \f$ and \f$ y \f$ are not scalar
  *  but vector values.
+ *
  */
 	template<class U> void apply ( U& x, U& y ) const {
 		U w ( x * m_c + y * m_s );
@@ -151,6 +152,7 @@ public:
  *  @return \f$ c \f$ value is described above
  */
 	inline const value_type c() const { return m_c; }
+
 /**
  *  @return \f$ s \f$ value is described above
  */

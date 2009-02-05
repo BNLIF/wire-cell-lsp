@@ -14,8 +14,8 @@ int main(){
 	unsigned int i,j,m,n;
 	std::cin >> m >> n;
 
-	assert( m > 1 );
-	assert( n > 1 );
+	assert( m > 0 );
+	assert( n > 0 );
 
 	matrix< double > A( m, n ),B;
 	vector< double > b( m);

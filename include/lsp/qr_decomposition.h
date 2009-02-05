@@ -51,26 +51,27 @@ namespace {
  */
 template<class T> class qr_decomposition {
 public:
-	typedef T matrix_type;
-	typedef typename matrix_type::value_type value_type;
-	typedef typename matrix_type::size_type size_type;
+	typedef T                                  matrix_type;   //!<
+	typedef typename matrix_type::value_type   value_type;    //!<
+	typedef typename matrix_type::size_type    size_type;     //!<
+	typedef matrix_vector_slice< matrix_type > diagonal_type; //!<
 private:
 	struct regular_tag {};
 	struct left_tag {};
 	struct right_tag {};
 private:
 	matrix_type& m_matrix;
-	mutable matrix_vector_slice< matrix_type > m_super;
-	mutable matrix_vector_slice< matrix_type > m_leading;
+	mutable diagonal_type m_super;
+	mutable diagonal_type m_leading;
 private:
 
 	template<class M1, class M2> void apply( M1& left, M2& right, const range& cell, const left_tag& ) const {
 		typedef givens_rotation< value_type > givens_rotation_type;
 		value_type z;
-	
+
 		z = m_super( cell(0) );
 		m_super( cell(0) ) = 0;
-	
+
 		for( range::const_iterator it = cell.begin() + 1; it != cell.end() ; ++it ) {
 			givens_rotation_type gr( m_leading(*it), z );
 
@@ -102,7 +103,7 @@ private:
 		typedef givens_rotation< value_type > givens_rotation_type;
 
 		const value_type lim = std::numeric_limits< value_type >::epsilon() * norm_frobenius( m_matrix ) / m_matrix.size2();
-	
+
 		for( range::const_reverse_iterator it = cell.rbegin() + 1; it != cell.rend(); ++it ) {
 			while( std::abs( m_super( *it ) ) > lim ) {
 
@@ -118,7 +119,7 @@ private:
 
 					z = gr_left.s() * m_leading(*it2);
 					m_leading(*it2) = gr_left.c() * m_leading(*it2);
-		
+
 					givens_rotation_type gr_right( m_leading(*it2-1), z );
 					gr_right.apply( m_super(*it2-1), m_leading(*it2) );
 					gr_right.apply( row(left,*it2-1), row(left,*it2) );
@@ -177,12 +178,17 @@ private:
 				return ;
 			}
 		}
-		
+
 		apply( left, right, cell, regular_tag() );
 
 	}
 
 public:
+/**
+ *  @brief An object constructor
+ *  @param[in,out] matrix
+ *
+ */
 	qr_decomposition( matrix_type& matrix ):
 		m_matrix( matrix ),
 		m_super(   matrix, slice(0, 1, matrix.size2() - 1), slice(1, 1, matrix.size2() - 1) ),
@@ -191,10 +197,25 @@ public:
 		assert( matrix.upper() == 1 && matrix.lower() == 0 );
 	}
 
+/**
+ *  @brief Transformation operaton
+ *  @param[out] left  The left matrix
+ *  @param[out] right The right matrix
+ *
+ *  The routine calculates and makes transformation.
+ *  Intrinsic assumption is that the all matrix are size-suitable.
+ *
+ *  \f$ M_{left} := Q M_{left} \f$
+ *
+ *  \f$ M_{right} := M_{right} H \f$
+ *
+ *  \f$ M_{matrix} := Q M_{matrix} H \equiv B \f$
+ *
+ */
 	template<class M1, class M2> void apply( M1& left, M2& right ) const {
 		apply( left, right, range(0, m_matrix.size2() ) );
 	}
-	
+
 };
 
 };

@@ -49,13 +49,14 @@ namespace lsp{
  */
 template<class T> class bidiagonal_transform {
 public:
-	typedef T matrix_type;
-	typedef typename matrix_type::value_type value_type;
-	typedef typename matrix_type::size_type  size_type;
+	typedef T                                matrix_type; //!< The type of the matrix object to be trasformed
+	typedef typename matrix_type::value_type value_type;  //!< The type of the elements stored in the matrix_type
+	typedef typename matrix_type::size_type  size_type;   //!< The type for seeking in the matrix object
+
 private:
 	matrix_type& m_matrix;
-	size_type    m_min;
-	size_type    m_max;
+	size_type    m_min_size;
+	size_type    m_max_size;
 
 public:
 /**
@@ -66,9 +67,10 @@ public:
  *
  */
 	bidiagonal_transform( matrix_type& matrix ):
-		m_matrix( matrix ) {
-		m_min = std::min( matrix.size1(), matrix.size2() );
-		m_max = std::max( matrix.size1(), matrix.size2() );
+		m_matrix( matrix ),
+		m_min_size( std::min( matrix.size1(), matrix.size2() ) ),
+		m_max_size( std::max( matrix.size1(), matrix.size2() ) ) {
+
 	}
 
 /**
@@ -78,7 +80,7 @@ public:
  *
  *  The routine calculates and makes transformation.
  *  Intrinsic assumption is that the all matrix are size-suitable.
- * 
+ *
  *  \f$ M_{left} := Q M_{left} \f$
  *
  *  \f$ M_{right} := M_{right} H \f$
@@ -87,15 +89,18 @@ public:
  *
  */
 	template<class M1, class M2> void apply( M1& left, M2& right ) const {
-		typedef vector< value_type > vector_type;
+		typedef vector< value_type >                 vector_type;
 		typedef householder_transform< vector_type > householder_transform_type;
 
 		assert( left.size1()  == m_matrix.size1() );
 		assert( right.size1() == m_matrix.size2() );
 
-		size_type i;
+		size_type i = 0;
 
-		for( i = 0; i < m_min - 1; ++i ){
+		if( m_min_size == 0 )
+			return ;
+
+		for( i = 0; i < m_min_size - 1; ++i ){
 			householder_transform_type hleft( i+1, i, column(m_matrix,i) );
 			hleft.apply( left, row_major_tag() );
 			hleft.apply( m_matrix, row_major_tag() );
@@ -104,7 +109,7 @@ public:
 			hright.apply( right, column_major_tag() );
 			hright.apply( m_matrix, column_major_tag() );
 		}
-	
+
 		householder_transform_type hleft( i+1, i, column(m_matrix,i) );
 		hleft.apply( left, row_major_tag() );
 		hleft.apply( m_matrix, row_major_tag() );
@@ -117,7 +122,7 @@ public:
  *
  */
 	value_type left_error() const {
-		return std::abs( ( 4 * m_matrix.size1() + 32 ) * ( 2 * m_min - 1 ) * std::numeric_limits< value_type >::epsilon() );
+		return std::abs( ( 4 * m_matrix.size1() + 32 ) * ( 2 * m_min_size - 1 ) * std::numeric_limits< value_type >::epsilon() );
 	}
 
 /**
@@ -127,9 +132,9 @@ public:
  *
  */
 	value_type right_error() const {
-		return std::abs( ( 4 * m_matrix.size2() + 32 ) * ( 2 * m_min - 1 ) * std::numeric_limits< value_type >::epsilon() );
+		return std::abs( ( 4 * m_matrix.size2() + 32 ) * ( 2 * m_min_size - 1 ) * std::numeric_limits< value_type >::epsilon() );
 	}
-	
+
 /**
  *  @brief Rounding error for the result matrix
  *
@@ -137,7 +142,7 @@ public:
  *
  */
 	value_type matrix_error() const {
-		return std::abs( ( 6 * m_matrix.size1() - 3 * m_min + 40 ) * ( 2 * m_min - 1 ) * std::numeric_limits< value_type >::epsilon() );
+		return std::abs( ( 6 * m_matrix.size1() - 3 * m_min_size + 40 ) * ( 2 * m_min_size - 1 ) * std::numeric_limits< value_type >::epsilon() );
 	}
 };
 

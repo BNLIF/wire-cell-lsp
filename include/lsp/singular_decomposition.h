@@ -44,7 +44,7 @@ namespace lsp{
  *           &       &\ddots &       &       \\
  *           &       &       &s_{n-1}&       \\
  *           &       &       &       & s_n   \\
- *  \end{array} \right|,\quad A \quad \mbox{is initial matrix,} \quad U, V \quad \mbox{are unitary matrixes,} \quad s_1 \ge s_2 \ge \dots \ge s_{n-1} \ge s_{n} \ge 0 
+ *  \end{array} \right|,\quad A \quad \mbox{is initial matrix,} \quad U, V \quad \mbox{are unitary matrixes,} \quad s_1 \ge s_2 \ge \dots \ge s_{n-1} \ge s_{n} \ge 0
  *  \f]
  *
  *  More widely known form of SVD is \f$ A = U S V^T \f$ and this way there are obvious equations: \f$ U \equiv Q^T,\quad V^T \equiv H^T \f$
@@ -52,15 +52,17 @@ namespace lsp{
  */
 template<class T> class singular_decomposition {
 public:
-	typedef T matrix_type;
-	typedef typename matrix_type::value_type value_type;
-	typedef typename matrix_type::size_type size_type;
-	typedef banded_adaptor< matrix_type > banded_adaptor_type;
+	typedef T                                       matrix_type;               //!< The type of the matrix object to be decomposited
+	typedef typename matrix_type::value_type        value_type;                //!< The type of the elements stored in the matrix_type
+	typedef typename matrix_type::size_type         size_type;                 //!< The type for seeking in the matrix object
+	typedef banded_adaptor< matrix_type >           banded_adaptor_type;       //!< The type of banded adaptor
+	typedef bidiagonal_transform< matrix_type >     bidiagonal_transform_type; //!< The type of a functor for bidiagonal transformation
+	typedef qr_decomposition< banded_adaptor_type > qr_decomposition_type;     //!< The type of a functor for QR decomposition
 private:
 	matrix_type& m_matrix;
-	mutable bidiagonal_transform< matrix_type > m_bd_trans;
+	mutable bidiagonal_transform_type m_bd_trans;
 	mutable banded_adaptor_type m_banded;
-	mutable qr_decomposition< banded_adaptor_type > m_qr_decomp;
+	mutable qr_decomposition_type m_qr_decomp;
 public:
 /**
  *  @brief An object constructor
@@ -85,7 +87,7 @@ public:
  *
  *  The routine decomposites the matrix.
  *  Intrinsic assumption is that the all matrix are size-suitable.
- * 
+ *
  *  \f$ M_{left} := Q M_{left} \f$
  *
  *  \f$ M_{right} := M_{right} H \f$
@@ -94,11 +96,11 @@ public:
  *
  */
 	template<class M1, class M2> void apply( M1& left, M2& right ) const {
-		typedef matrix_vector_slice< matrix_type > matrix_vector_slice_type;
+		typedef matrix_vector_slice< matrix_type > diagonal_type;
 		typedef vector< size_type > permutation_type;
 
 		m_bd_trans.apply( left, right );
-		
+
 		value_type lim = norm_frobenius( m_banded ) * m_bd_trans.matrix_error();
 		for( typename banded_adaptor_type::iterator1 it1 = m_banded.begin1(); it1 != m_banded.end1(); ++it1){
 			for( typename banded_adaptor_type::iterator2 it2 = it1.begin(); it2 != it1.end(); ++it2){
@@ -109,10 +111,10 @@ public:
 
 		m_qr_decomp.apply( left, right );
 
-		matrix_vector_slice_type singular( m_matrix,
+		diagonal_type singular( m_matrix,
 			slice(0, 1, std::min( m_banded.size1(), m_banded.size2() )),
 			slice(0, 1, std::min( m_banded.size1(), m_banded.size2() )) );
-		for( typename matrix_vector_slice_type::iterator it = singular.begin(); it != singular.end(); ++it ){
+		for( typename diagonal_type::iterator it = singular.begin(); it != singular.end(); ++it ){
 			if( *it < 0 ){
  				*it = -(*it);
 				column( right, it.index() ) = -column( right, it.index() );
@@ -124,13 +126,13 @@ public:
 			*it = it.index();
 		}
 
-		std::sort( pm.begin(), pm.end(), vector_less< matrix_vector_slice_type, std::greater< typename matrix_vector_slice_type::value_type > >( singular ) );
-		
+		std::sort( pm.begin(), pm.end(), vector_less< diagonal_type, std::greater< typename diagonal_type::value_type > >( singular ) );
+
 		for( typename permutation_type::size_type it = 0; it != pm.size(); ++it ){
 			if( it < pm(it) ) {
 				row(m_matrix, pm(it)).swap( row(m_matrix, it) );
 				row(left, pm(it)).swap( row(left, it) );
-				
+
 				column(m_matrix, pm(it)).swap( column(m_matrix, it) );
 				column(right, pm(it)).swap( column(right, it) );
 			}

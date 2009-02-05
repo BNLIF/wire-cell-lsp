@@ -33,29 +33,63 @@ using namespace boost::numeric::ublas;
 
 namespace lsp {
 
+/**
+ *  @class nnls
+ *  @brief A functor for solving Non-Negative Least Squares problem.
+ *
+ *  The Non-Negative Least Squares problem is very simular to
+ *  the Least Squares Problem and has many applications in physics.
+ *  The NNLS consists of finding vector \f$ {\bf \hat x} \f$
+ *  such that euclidean norm \f$ ||A {\bf \hat x} - {\bf b}|| \f$ is minimal but
+ *  \f$ \forall i \quad {\hat x}_i \ge 0 \f$.
+ *  Where matrix \f$ A \f$ and vector \f$ {\bf b} \f$ are given.
+ *  It is trivial that \f$ {\bf \hat x} \f$ for these two problems
+ *  may be the same but not always.
+ *
+ */
 template<class M, class V> class nnls {
 public:
-	typedef M matrix_type;
-	typedef V vector_type;
-	typedef typename matrix_type::value_type value_type;
-	typedef typename matrix_type::size_type size_type;
+	typedef M                                matrix_type; //!<
+	typedef V                                vector_type; //!<
+	typedef typename matrix_type::value_type value_type;  //!<
+	typedef typename matrix_type::size_type  size_type;   //!<
 private:
 	const matrix_type& m_matrix;
 	const vector_type& m_vector;
 public:
-	nnls( const matrix_type& matrix, const vector_type& vec ):
+/**
+ *  @brief An object constructor
+ *  @param[in,out] matrix The given matrix \f$ A \f$
+ *  @param[in,out] vector The given vector \f$ {\bf b} \f$
+ *
+ *  References to matrix and vector object are stored here.
+ *  Actual solving will be performed as soon as solve( sV& ret, sM& cov ) will be called.
+ *  Pay attention that your objects will not be altered but only copyed.
+ *
+ */
+	nnls( const matrix_type& matrix, const vector_type& vector ):
 		m_matrix( matrix ),
-		m_vector( vec ) {
-	
-		assert( vec.size() == matrix.size1() );
+		m_vector( vector ) {
+
+		assert( vector.size() == matrix.size1() );
 
 	}
 
+/**
+ *  @brief Solving operaton
+ *  @param[out] ret Desired vector \f$ {\bf \hat x} \f$
+ *  @param[out] cov The covariation matrix of the \f$ {\bf \hat x} \f$
+ *
+ *  Pay attention that covatiation matrix is calculated for
+ *  Least Squares Problem composed from your matrices that gives answer for
+ *  Non-Negative Least Squares problem.
+ *
+ */
 	template<class sV, class sM> void solve( sV& ret, sM& cov ) const {
 		typedef std::list< value_type > index_space_type;
 		typedef vector< value_type >    vector_type;
 		typedef least_squares< matrix_type, vector_type > least_squares_type;
-		
+
 		value_type  lim;
 		vector_type w,z;
 		index_space_type positive,zero;
@@ -69,9 +103,8 @@ public:
 
 		while( ! is_vector_elem< vector_type, index_space_type, std::less_equal<value_type> >( w, zero ) ){
 			size_type max_w = *(std::max_element( zero.begin(), zero.end(), vector_less< vector_type, std::less< typename vector_type::value_type > >( w ) ));
-			positive.push_back( max_w );
-			zero.erase( std::remove( zero.begin(), zero.end(), max_w ), zero.end() );
-		
+			swap_indexes(zero,positive,max_w);
+
 			do {
 				vector_type f = m_vector;
 				matrix< value_type > Ep( m_matrix.size1(), m_matrix.size2() );
@@ -80,7 +113,7 @@ public:
 					column(Ep, (*it)) = column(m_matrix, (*it));
 				for( typename index_space_type::const_iterator it = zero.begin();it != zero.end(); ++it )
 					column(Ep, (*it)) = zero_vector< value_type >( m_matrix.size1() );
-				
+
 				least_squares.solve( z, cov );
 				for( typename index_space_type::const_iterator it = zero.begin();it != zero.end(); ++it )
 					z( *it ) = 0;
@@ -93,21 +126,27 @@ public:
 						if( std::abs(*it) < lim ) *it=0; // rounding error checking
 					break;
 				}
-				
-				typename index_space_type::const_iterator min_1 = std::min_element( positive.begin(), positive.end(), vector_less_nnls1< vector_type, std::less< typename vector_type::value_type > >(ret,z) );
-				value_type min_1_value = ret(*min_1) / (ret(*min_1)-z(*min_1));
+
+				size_type min_1 = *(std::min_element( positive.begin(), positive.end(), vector_less_nnls1< vector_type, std::less< typename vector_type::value_type > >(ret,z) ));
+				value_type min_1_value = ret(min_1) / (ret(min_1)-z(min_1));
 				ret = ret + min_1_value * ( z - ret );
+
+				ret(min_1) = 0;
+				swap_indexes(positive,zero,min_1);
 
 				for( typename index_space_type::const_iterator it = positive.begin();it != positive.end(); ++it ) {
 					if( ret(*it) <= 0 ){
 						ret(*it) = 0;
-						zero.push_back( *it );
+						swap_indexes(positive,zero,*it);
 					}
 				}
-				positive.erase( std::remove_if( positive.begin(), positive.end(), x_is_zero< size_type, vector_type >(ret) ), positive.end() );
 			} while( true );
 		}
 	}
+	template<class sV> void solve( sV& ret ) const {
+		solve( ret, null_type::s_null );
+	}
+
 };
 
 };

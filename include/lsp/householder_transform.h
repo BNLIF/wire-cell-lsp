@@ -56,9 +56,9 @@ namespace lsp{
  */
 template< class T > class householder_transform {
 public:
-	typedef T                                vector_type;
-	typedef typename vector_type::value_type value_type;
-	typedef typename vector_type::size_type  size_type;
+	typedef T                                vector_type; //!< The type of vector object used to construct the transformation
+	typedef typename vector_type::value_type value_type;  //!< The type of elements of that vector
+	typedef typename vector_type::size_type  size_type;   //!< The type for seeking in the vector object
 
 private:
 	size_type  m_l;
@@ -66,17 +66,20 @@ private:
 	value_type m_s;
 	value_type m_h;
 	vector_type m_v;
+
 public:
 /**
  *  @brief An object constructor
  *  @param[in]     l The number of nonzero coordinates of the result vector
  *  @param[in]     p The index of coordinate to be altered
  *  @param[in,out] v The initial vector.
- * 
+ *
+ *  The elements of transformation matrix \f$ Q \f$ are calculated in this
+ *  routine. Not all of them but only that that are needed to perform
+ *  the transformation on the any vector object.
  */
 	householder_transform( size_type l, size_type p, vector_type v ):
 		m_s( 0 ), m_l( l ), m_p( p ), m_v(v) {
-		size_type i;
 		const size_type m = v.size();
 
 		assert( p < l );
@@ -95,7 +98,7 @@ public:
 
 		if( w != 0 ){
 			m_s += ( v(p)/w )*( v(p)/w );
-			for( i = l; i < m; ++i )
+			for( size_type i = l; i < m; ++i )
 				m_s += ( v(i)/w )*( v(i)/w );
 			m_s = ( v(p) < 0 ? 1 : -1 ) * w * std::pow( m_s, 0.5 );
 		} else {
