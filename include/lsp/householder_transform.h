@@ -108,13 +108,6 @@ public:
 		m_h = v(p) - m_s;
 	}
 
-/**
- *  @brief Transformation operaton
- *  @param[in,out] w Matrix or vector to be transformed
- *
- *  It computes result of \f$ Qw \f$ or \f$ wQ \f$ and stores it in the w. Both
- *  vector and matrix productions are available.
- */
 	template<class M> void apply ( matrix_row<M> v ) const {
 		apply( v, vector_tag() );
 	}
@@ -142,6 +135,14 @@ public:
 		for( size_type i = m_l; i < v.size(); i++ )
 			v(i) += s * m_v(i);
 	}
+/**
+ *  @brief Transformation operaton
+ *  @param[in,out] w Matrix or vector to be transformed
+ *
+ *  It computes result of \f$ Qw \f$ or \f$ wQ \f$ and stores it in the w. Both
+ *  vector and matrix productions are available.
+ */
+
 	template<class U> void apply ( U& w, row_major_tag ) const {
 		for( size_type i = 0; i < w.size2(); ++i )
 			apply( column( w, i ) );

@@ -46,7 +46,9 @@ namespace {
  *  @class qr_decomposition
  *  @brief A functor for the modified QR decomposition
  *
- *
+ *  Modified QR decomposition is iterative alghoritm that transformates
+ *  bidiagonal banded matrix into diagonal form by the number of
+ *  Givens transformations. The decomposition is one of SVD parts.
  *
  */
 template<class T> class qr_decomposition {
