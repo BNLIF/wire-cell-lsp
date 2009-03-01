@@ -20,6 +20,7 @@
 #define _UTILS_H
 
 #include <algorithm>
+#include <cassert>
 #include <cmath>
 #include <functional>
 
