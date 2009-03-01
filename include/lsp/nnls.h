@@ -86,7 +86,7 @@ public:
  *
  */
 	template<class sV, class sM> void solve( sV& ret, sM& cov ) const {
-		typedef std::list< value_type > index_space_type;
+		typedef std::list< size_type > index_space_type;
 		typedef vector< value_type >    vector_type;
 		typedef least_squares< matrix_type, vector_type > least_squares_type;
 
