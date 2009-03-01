@@ -130,7 +130,7 @@ public:
  * This library was written in the hope to be useful not only for the author.
  *
  * @section Implementation
- * You will see or saw already that this library written not in the boost::uBLAS
+ * You will see or already have seen that this library written not in the boost::uBLAS
  * style. It means that sometimes your input variables are altered by
  * the routines. The author fully recognize that it is not a good practice and
  * described in this docs the situations when your variables are altered.
