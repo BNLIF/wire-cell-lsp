@@ -79,7 +79,7 @@ public:
  *  the transformation on the any vector object.
  */
 	householder_transform( size_type l, size_type p, vector_type v ):
-		m_s( 0 ), m_l( l ), m_p( p ), m_v(v) {
+		m_l( l ), m_p( p ), m_s( 0 ), m_v(v) {
 		const size_type m = v.size();
 
 		assert( p < l );
