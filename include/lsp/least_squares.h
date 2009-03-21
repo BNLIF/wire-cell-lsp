@@ -126,14 +126,14 @@ public:
  * @section Introduction
  * It is a tiny library written in C++ using boost::uBLAS library for solving
  * the Least Squares Problem and the Non-Negative Squares Problem that is the
- * related problem. This problems are widely described in different references.
- * This library was written in the hope to be useful not only for the author.
+ * related problem. These problems are widely described in different references.
+ * This library was written in hope to be useful not only for author.
  *
  * @section Implementation
- * You will see or already have seen that this library written not in the boost::uBLAS
+ * You will see or already have seen that this library was written not in the boost::uBLAS
  * style. It means that sometimes your input variables are altered by
  * the routines. The author fully recognize that it is not a good practice and
- * described in this docs the situations when your variables are altered.
+ * described in this docs situations when your variables are altered.
  * You should pay attention if you still need your data untouched after You
  * got the result. There are two reasons to write library in such way. The first
  * one is that the author was followed by the book where some of the algorithms
