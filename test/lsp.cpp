@@ -4,7 +4,7 @@
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/io.hpp>
-#include "least_squares.h"
+#include <lsp/least_squares.h>
 
 int main(){
 	using namespace boost::numeric::ublas;
@@ -27,7 +27,10 @@ int main(){
 
 	A0=A;
 	b0=b;
-	vector< double > x = lsp::least_squares(A,b);
+	lsp::least_squares< matrix< double >, vector< double > > lsp(A,b);
+	vector< double > x;
+	matrix< double > cov(n,n);
+	lsp.solve(x,cov);
 
 	std::cout.precision(6);
 	std::cout << std::fixed;
