@@ -82,6 +82,7 @@ public:
 	template<class sV, class sM> void solve( sV& ret, sM& cov ) const {
 		typedef sV result_vector_type;
 		typedef sM covariation_matrix_type;
+		typedef banded_adaptor< covariation_matrix_type > diagonal_covariation_type;
 		typedef matrix_vector_slice< matrix_type > diagonal_type;
 		typedef matrix< value_type > unitary_marix_type;
 
@@ -91,24 +92,25 @@ public:
 		m_svd.apply(left, right);
 
 		m_vector = prod( left, m_vector );
-
+		
 		diagonal_type singular( m_matrix,
 			slice(0, 1, std::min( m_matrix.size1(), m_matrix.size2() )),
 			slice(0, 1, std::min( m_matrix.size1(), m_matrix.size2() )) );
 
 		ret.resize( singular.size() );
 
+		diagonal_covariation_type dcov(cov,0,0);
 		for( typename diagonal_type::iterator it = singular.begin(); it != singular.end(); ++it ){
 			if( *it != 0 ) {
 				ret( it.index() ) = m_vector( it.index() ) / (*it);
-				cov( it.index(), it.index() ) = value_type( 1 ) / ( (*it) * (*it) );
+				dcov( it.index(), it.index() ) = value_type( 1 ) / ( (*it) * (*it) );
 			} else {
 				ret( it.index() ) = value_type( 0 );
-				cov( it.index(), it.index() ) = value_type( 0 );
+				dcov( it.index(), it.index() ) = value_type( 0 );
 			}
 		}
 
-		cov = prod( cov, right );
+		cov = prod( dcov, right );
 		cov = prod( trans( right ), cov );
 
 		ret = prod( right, ret );

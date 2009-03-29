@@ -32,7 +32,9 @@ int main(){
 	vector< double > x;
 	ls.solve(x,cov);
 
+	std::cout << x << std::endl;
 	std::cout << format("%.6f") % norm_2( prod( A0, x ) - b0 ) << std::endl;
+	std::cout << cov << std::endl;
 
 	return 0;
 }
