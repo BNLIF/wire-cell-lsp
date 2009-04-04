@@ -110,8 +110,8 @@ public:
 			}
 		}
 
-		cov = prod( dcov, right );
-		cov = prod( trans( right ), cov );
+		cov = prod( dcov, trans(right) );
+		cov = prod( right, cov );
 
 		ret = prod( right, ret );
 	}
