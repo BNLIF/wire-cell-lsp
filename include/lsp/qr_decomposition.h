@@ -215,7 +215,7 @@ public:
  *
  */
 	template<class M1, class M2> void apply( M1& left, M2& right ) const {
-		apply( left, right, range(0, m_matrix.size2() ) );
+		apply( left, right, range(0, std::min( m_matrix.size1(), m_matrix.size2() ) ) );
 	}
 
 };

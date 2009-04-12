@@ -97,7 +97,7 @@ public:
 			slice(0, 1, std::min( m_matrix.size1(), m_matrix.size2() )),
 			slice(0, 1, std::min( m_matrix.size1(), m_matrix.size2() )) );
 
-		ret.resize( singular.size() );
+		ret.resize( m_matrix.size2() );
 
 		diagonal_covariation_type dcov(cov,0,0);
 		for( typename diagonal_type::iterator it = singular.begin(); it != singular.end(); ++it ){
