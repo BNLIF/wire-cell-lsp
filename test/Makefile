@@ -1,4 +1,4 @@
-MODULES  = givens_rotation householder_transform least_squares lsp nnls qr_decomposition singular_decomposition
+MODULES  = cholesky_decomposition givens_rotation householder_transform least_squares lsp nnls qr_decomposition singular_decomposition
 CXXFLAGS += -I ../include -Wall -DTEST
 
 all: $(MODULES)
