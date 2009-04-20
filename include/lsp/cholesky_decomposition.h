@@ -1,5 +1,5 @@
 /*
-    $Id: qr_decomposition.h 66 2009-04-12 14:33:06Z matwey $
+    $Id$
     Copyright (C) 2008  Matwey V. Kornilov <matwey.kornilov@gmail.com>
 
     This program is free software: you can redistribute it and/or modify
