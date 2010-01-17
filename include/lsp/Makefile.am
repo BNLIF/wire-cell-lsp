@@ -1,0 +1,2 @@
+lsp_HEADERS = bidiagonal_transform.h cholesky_decomposition.h givens_rotation.h householder_transform.h least_squares.h nnls.h qr_decomposition.h singular_decomposition.h utils.h
+lspdir  = /usr/include/lsp

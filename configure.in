@@ -1,0 +1,37 @@
+#                                               -*- Autoconf -*-
+# Process this file with autoconf to produce a configure script.
+
+AC_PREREQ([2.59])
+AC_INIT([lsp], [0.1.0], [matwey.kornilov@gmail.com])
+AM_INIT_AUTOMAKE([lsp],[0.1.0])
+AC_CONFIG_SRCDIR([include/lsp/nnls.h])
+AC_CONFIG_HEADERS([include/config.h])
+AC_LANG([C++])
+
+# Checks for programs.
+AC_PROG_CXX
+
+# Checks for libraries.
+
+# Checks for header files.
+AC_CHECK_HEADERS([boost/numeric/ublas/io.hpp \
+        boost/numeric/ublas/matrix.hpp \
+        boost/numeric/ublas/matrix_proxy.hpp \
+        boost/numeric/ublas/symmetric.hpp \
+        boost/numeric/ublas/triangular.hpp \
+        boost/numeric/ublas/vector.hpp \
+        boost/numeric/ublas/vector_proxy.hpp],[],[AC_MSG_ERROR([can't find boost ublas headers])])
+	
+# Checks for typedefs, structures, and compiler characteristics.
+AC_HEADER_STDBOOL
+AC_C_INLINE
+
+# Checks for library functions.
+AC_CHECK_FUNCS([pow sqrt])
+
+AC_CONFIG_FILES([Makefile
+		include/Makefile
+		include/lsp/Makefile
+		test/Makefile
+		doc/Makefile])
+AC_OUTPUT
