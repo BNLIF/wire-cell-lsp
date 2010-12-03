@@ -104,10 +104,12 @@ private:
 	template<class M1, class M2> void apply( M1& left, M2& right, const range& cell, const regular_tag& ) const {
 		typedef givens_rotation< value_type > givens_rotation_type;
 
-		const value_type lim = std::numeric_limits< value_type >::epsilon() * norm_frobenius( m_matrix ) / m_matrix.size2();
+		const value_type lim = std::numeric_limits< value_type >::epsilon() * norm_inf( m_matrix );
 
 		for( range::const_reverse_iterator it = cell.rbegin() + 1; it != cell.rend(); ++it ) {
-			while( std::abs( m_super( *it ) ) > lim ) {
+			value_type last_super; /* use differential convergation control */
+			do {
+				last_super = m_super( *it );
 
 				value_type en1 = ( *it != cell(0) ? m_super(*it - 1) : value_type(0) );
 				value_type e0 = m_leading( cell(0) ) - shift( m_leading(*it + 1), m_leading(*it), m_super(*it), en1 ) / m_leading( cell(0) );
@@ -132,7 +134,7 @@ private:
 
 					gr_left = givens_rotation_type( m_super(*it2-1), z );
 				}
-			}
+			} while( std::abs( last_super - m_super( *it ) ) > lim );
 			m_super( *it ) = 0;
 		}
 	}
@@ -142,7 +144,7 @@ private:
 		if( cell.size() == 1 ) /* Scalar is in diagonal form */
 			return ;
 
-		const value_type lim = 6 * std::numeric_limits< value_type >::epsilon() * norm_frobenius( m_matrix );
+		const value_type lim = 6 * std::numeric_limits< value_type >::epsilon() * norm_inf( m_matrix );
 
 		/* Looking for the zero diagonal element */
 		for( range::const_reverse_iterator it = cell.rbegin() + 1; it != cell.rend() ; ++it ) {

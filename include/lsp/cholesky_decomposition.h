@@ -36,7 +36,7 @@ namespace lsp{
  *  @brief Upper Cholesky decomposition
  *  @param[in,out] m The matrix to be decomposited. Result is stored in this object.
  *
- *  Cholesky decomposition is defined only for symmetric positive semidefined matrixes.
+ *  Cholesky decomposition is defined only for symmetric positive semidefinite matrixes.
  *  This conditions aren't checked.
  *  
  *  The decomposition defined as \f$ C = R^T R \f$ where \f$ R \f$ is upper triangular.
