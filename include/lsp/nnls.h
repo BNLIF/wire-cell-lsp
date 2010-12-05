@@ -29,9 +29,9 @@
 #include <list>
 #include <limits>
 
-using namespace boost::numeric::ublas;
-
 namespace lsp {
+
+using namespace boost::numeric::ublas;
 
 /**
  *  @class nnls

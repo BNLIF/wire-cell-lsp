@@ -27,11 +27,10 @@
 #include <boost/numeric/ublas/triangular.hpp>
 #include <boost/numeric/ublas/vector_proxy.hpp>
 
+namespace lsp{
+
 using namespace boost::numeric::ublas;
 
-namespace lsp{
-	
-	
 /**
  *  @brief Upper Cholesky decomposition
  *  @param[in,out] m The matrix to be decomposited. Result is stored in this object.

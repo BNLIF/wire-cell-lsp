@@ -29,6 +29,8 @@
 
 namespace lsp{
 
+using namespace boost::numeric::ublas;
+
 /**
  *  @class bidiagonal_transform
  *  @brief A functor for the transformation matrix into the bidiagonal form using Householder transformations.

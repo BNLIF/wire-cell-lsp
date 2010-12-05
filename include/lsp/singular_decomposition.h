@@ -28,9 +28,9 @@
 #include <boost/numeric/ublas/matrix_proxy.hpp>
 #include <boost/numeric/ublas/banded.hpp>
 
-using namespace boost::numeric::ublas;
-
 namespace lsp{
+
+using namespace boost::numeric::ublas;
 
 /**
  *  @class singular_decomposition

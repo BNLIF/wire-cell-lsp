@@ -1,6 +1,6 @@
 /*
     $Id$
-    Copyright (C) 2008  Matwey V. Kornilov <matwey.kornilov@gmail.com>
+    Copyright (C) 2008,2010  Matwey V. Kornilov <matwey.kornilov@gmail.com>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,9 +23,9 @@
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/matrix_proxy.hpp>
 
-using namespace boost::numeric::ublas;
-
 namespace lsp{
+
+using namespace boost::numeric::ublas;
 
 /**
  *  @class givens_rotation

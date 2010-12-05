@@ -25,9 +25,9 @@
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
 
-using namespace boost::numeric::ublas;
-
 namespace lsp {
+
+using namespace boost::numeric::ublas;
 
 /**
  *  @class least_squares

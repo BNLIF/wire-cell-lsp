@@ -27,11 +27,11 @@
 #include <boost/numeric/ublas/matrix_proxy.hpp>
 #include <boost/numeric/ublas/storage.hpp>
 
-using namespace boost::numeric::ublas;
-
 namespace lsp{
 
-namespace {
+using namespace boost::numeric::ublas;
+
+namespace detail {
 	template<class T> static T shift( T q2, T q1, T e2, T e1 ) {
 		typedef T value_type;
 		const value_type f = ( q2*q2 - q1*q1 +  e2*e2 - e1*e1 ) / ( 2*e2*q1 );
@@ -112,7 +112,7 @@ private:
 				last_super = m_super( *it );
 
 				value_type en1 = ( *it != cell(0) ? m_super(*it - 1) : value_type(0) );
-				value_type e0 = m_leading( cell(0) ) - shift( m_leading(*it + 1), m_leading(*it), m_super(*it), en1 ) / m_leading( cell(0) );
+				value_type e0 = m_leading( cell(0) ) - detail::shift( m_leading(*it + 1), m_leading(*it), m_super(*it), en1 ) / m_leading( cell(0) );
 				value_type z = m_super( cell(0) );
 
 				givens_rotation_type gr_left( e0, z );
