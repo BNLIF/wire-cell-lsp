@@ -36,8 +36,8 @@ namespace detail {
 		typedef T value_type;
 		const value_type f = ( q2*q2 - q1*q1 +  e2*e2 - e1*e1 ) / ( 2*e2*q1 );
 		const value_type t = ( f < 0 ?
-              		- f + std::pow(( value_type(1)+f*f ),0.5) :
-              		- f - std::pow(( value_type(1)+f*f ),0.5) );
+              		- f + std::sqrt( value_type(1)+f*f ) :
+              		- f - std::sqrt( value_type(1)+f*f ) );
 			return ( q2*q2 + e2*(e2 - q1/t) );
 	};
 };

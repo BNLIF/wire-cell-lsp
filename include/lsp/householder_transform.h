@@ -100,7 +100,7 @@ public:
 			m_s += ( v(p)/w )*( v(p)/w );
 			for( size_type i = l; i < m; ++i )
 				m_s += ( v(i)/w )*( v(i)/w );
-			m_s = ( v(p) < 0 ? 1 : -1 ) * w * std::pow( m_s, 0.5 );
+			m_s = ( v(p) < 0 ? 1 : -1 ) * w * std::sqrt( m_s );
 		} else {
 			m_s = 0;
 		}
