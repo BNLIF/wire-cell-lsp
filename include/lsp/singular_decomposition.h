@@ -57,7 +57,7 @@ public:
 	typedef typename matrix_type::size_type         size_type;                 //!< The type for seeking in the matrix object
 	typedef banded_adaptor< matrix_type >           banded_adaptor_type;       //!< The type of banded adaptor
 	typedef bidiagonal_transform< matrix_type >     bidiagonal_transform_type; //!< The type of a functor for bidiagonal transformation
-	typedef qr_decomposition< banded_adaptor_type > qr_decomposition_type;     //!< The type of a functor for QR decomposition
+	typedef qr_decomposition< banded_adaptor_type, bidiag_tag > qr_decomposition_type;     //!< The type of a functor for QR decomposition
 private:
 	matrix_type& m_matrix;
 	mutable bidiagonal_transform_type m_bd_trans;

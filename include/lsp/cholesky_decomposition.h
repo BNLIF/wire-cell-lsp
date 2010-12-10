@@ -19,13 +19,13 @@
 #ifndef _CHOLESKY_DECOMPOSITION_H
 #define _CHOLESKY_DECOMPOSITION_H
 
-#include <limits>
-
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/matrix_proxy.hpp>
 #include <boost/numeric/ublas/banded.hpp>
 #include <boost/numeric/ublas/triangular.hpp>
 #include <boost/numeric/ublas/vector_proxy.hpp>
+
+#include <limits>
 
 namespace lsp{
 

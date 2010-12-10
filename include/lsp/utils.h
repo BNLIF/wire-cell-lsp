@@ -24,10 +24,17 @@
 #include <cmath>
 #include <functional>
 
+#include <boost/numeric/ublas/expression_types.hpp>
+#include <boost/type_traits.hpp>
+#include <boost/utility/enable_if.hpp>
+
 /**
  *  @brief Basic namespace
  */
 namespace lsp {
+
+using namespace boost::numeric::ublas;
+
 /**
  *  @class less_abs
  *  @brief Comparsion of absoulte values
@@ -168,6 +175,19 @@ static null_type s_null;
 
 public:
 
+};
+
+template<class T, class Enable = void> struct temporary_type_traits {
+	typedef T type;
+};
+template<class T> struct temporary_type_traits<T, typename boost::enable_if< boost::is_same< typename T::type_category, scalar_tag > >::type > {
+	typedef typename T::expression_type::value_type type;
+};
+template<class T> struct temporary_type_traits<T, typename boost::enable_if< boost::is_same< typename T::type_category, vector_tag > >::type > {
+	typedef typename T::vector_temporary_type type;
+};
+template<class T> struct temporary_type_traits<T, typename boost::enable_if< boost::is_same< typename T::type_category, matrix_tag > >::type > {
+	typedef typename T::matrix_temporary_type type;
 };
 
 };

@@ -19,11 +19,11 @@
 #ifndef _LEAST_SQUARES_H
 #define _LEAST_SQUARES_H
 
-#include <lsp/singular_decomposition.h>
-#include <lsp/utils.h>
-
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
+
+#include <lsp/singular_decomposition.h>
+#include <lsp/utils.h>
 
 namespace lsp {
 

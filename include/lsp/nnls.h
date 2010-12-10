@@ -19,15 +19,15 @@
 #ifndef _NNLS_H
 #define _NNLS_H
 
-#include <lsp/least_squares.h>
-#include <lsp/utils.h>
+#include <algorithm>
+#include <list>
+#include <limits>
 
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
 
-#include <algorithm>
-#include <list>
-#include <limits>
+#include <lsp/least_squares.h>
+#include <lsp/utils.h>
 
 namespace lsp {
 

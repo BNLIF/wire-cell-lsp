@@ -19,13 +19,14 @@
 #ifndef _HOUSEHOLDER_TRANSFORM_H
 #define _HOUSEHOLDER_TRANSFORM_H
 
-#include <lsp/utils.h>
+#include <boost/numeric/ublas/vector.hpp>
+#include <boost/numeric/ublas/matrix.hpp>
+#include <boost/numeric/ublas/symmetric.hpp>
 
 #include <algorithm>
 #include <limits>
 
-#include <boost/numeric/ublas/vector.hpp>
-#include <boost/numeric/ublas/matrix.hpp>
+#include <lsp/utils.h>
 
 namespace lsp{
 
@@ -160,6 +161,19 @@ public:
  *  @return \f$ h = v_p - s \f$
  */
 	inline const value_type h() const { return m_h; }
+/**
+ *  @return \f$ u \f$
+ */
+	inline vector_type u() const {
+		vector_type ret = zero_vector< value_type >( m_v.size() );
+		ret(m_p) = m_h;
+		project(ret,range(m_l,ret.size())) = project(m_v,range(m_l,m_v.size()));
+		return ret;
+	}
+/**
+ *  @return \f$ b \equiv \f$
+ */
+	inline const value_type b() const { return m_s * m_h; }
 };
 
 };

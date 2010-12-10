@@ -19,9 +19,9 @@
 #ifndef _GIVENS_ROTATION_H
 #define _GIVENS_ROTATION_H
 
-#include <boost/numeric/ublas/vector.hpp>
-#include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/matrix_proxy.hpp>
+
+#include <lsp/utils.h>
 
 namespace lsp{
 
@@ -133,7 +133,7 @@ public:
  *
  */
 	template<class U> void apply ( U& x, U& y ) const {
-		U w ( x * m_c + y * m_s );
+		typename lsp::temporary_type_traits< U >::type w ( x * m_c + y * m_s );
 		y = x * ( -m_s ) + y * m_c;
 		x = w;
 	}

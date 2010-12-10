@@ -19,13 +19,13 @@
 #ifndef _BIDIAGONAL_TRANSFORM_H
 #define _BIDIAGONAL_TRANSFORM_H
 
-#include <lsp/householder_transform.h>
-
 #include <limits>
 
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/matrix_proxy.hpp>
 #include <boost/numeric/ublas/vector.hpp>
+
+#include <lsp/householder_transform.h>
 
 namespace lsp{
 
