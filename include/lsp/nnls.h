@@ -105,6 +105,7 @@ public:
 			size_type max_w = *(std::max_element( zero.begin(), zero.end(), vector_less< vector_type, std::less< typename vector_type::value_type > >( w ) ));
 			swap_indexes(zero,positive,max_w);
 
+			bool check_sign = true;
 			do {
 				vector_type f = m_vector;
 				matrix< value_type > Ep( m_matrix.size1(), m_matrix.size2() );
@@ -115,6 +116,11 @@ public:
 					column(Ep, (*it)) = zero_vector< value_type >( m_matrix.size1() );
 
 				least_squares.solve( z, cov );
+				if( check_sign && z(max_w) <= 0 ) {
+					w(max_w) = 0;
+					break;
+				}
+				check_sign = false;
 				for( typename index_space_type::const_iterator it = zero.begin();it != zero.end(); ++it )
 					z( *it ) = 0;
 
