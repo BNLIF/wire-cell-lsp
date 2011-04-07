@@ -98,6 +98,8 @@ public:
 			hleft.apply( column(m_matrix,i) );
 			hleft.apply( left, row_major_tag() );
 			
+			if( hleft.b() == 0 ) continue;
+			
 			matrix_range< matrix_type > sub_submatrix( m_matrix, range(i+1, m_size), range(i+1, m_size) );
 			value_type  c = value_type(1) / hleft.b();
 			vector_type u = project( hleft.u(), range(i+1,m_size) );
