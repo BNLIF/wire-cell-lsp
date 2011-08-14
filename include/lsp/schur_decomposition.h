@@ -104,8 +104,9 @@ public:
 		std::sort( pm.begin(), pm.end(), vector_less< diagonal_type, std::greater< typename diagonal_type::value_type > >( lambda ) );
 
 		for( typename permutation_type::size_type it = 0; it != pm.size(); ++it ){
+			std::cerr << pm(it) << std::endl;
 			if( it < pm(it) ) {
-				row(m_matrix, pm(it)).swap( row(m_matrix, it) );
+				std::swap( m_matrix(pm(it),pm(it)), m_matrix(it,it) );
 				row(left, pm(it)).swap( row(left, it) );
 			}
 		}
